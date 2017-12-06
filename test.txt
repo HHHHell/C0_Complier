@@ -1,0 +1,166 @@
+const int const_int_1 = 100, const_int_2 = 200;
+const int const_int_3 = 300;
+const char const_char_a = 'a', const_char_b = 'b';
+const char const_char_c = 'c';
+
+int out_1, out_2[20];
+char out_a, out_b[50];
+
+int foo1(int a, int b){
+	int a;
+	a = 1;
+	printf("foo_1 ");
+	return (a);
+}
+
+int foo2{
+	printf("foo_2 ");
+	return (2);
+}
+
+char foo3(char a){
+	printf("foo_3 ");
+	return ('3');
+}
+
+char foo4{
+	char a;
+	a = '4';
+	printf("foo_4 ");
+	return (a);
+}
+
+void foo5{
+	printf("foo_5 ");
+}
+
+int foo6(int a){
+	printf("foo_6 ");
+	if(a == 1)
+		return (a);
+	else
+		return  (a*foo6(a-1));
+}
+void Main(){
+	const int const_int_4 = 400, const_int_5 = 500;
+	const char const_char_d = 'd', const_char_e = 'e';
+
+	int in_1, in_2[20];
+	int in_3;
+	char in_a, in_b[10];
+	char in_c;
+	int switch_num;
+	char swictch_chr;
+
+	In_1 = 2;
+	in_2[1] = 10;
+	in_2[2] = 20;
+	in_1 = (in_2[1]+10)*in_1;
+	printf(in_1);
+	printf(" ");
+
+	in_a = 'a'+10;
+	printf(in_a);
+	printf(" ");
+
+	in_1 = 1;
+	in_2[1] = 2;
+	in_c = in_a - ('a' - 'A') + (2*3-in_1 + in_2[1]);
+	printf(in_c);
+	printf(" ");
+
+	in_2[1] = 1;
+
+	if(const_char_a != 'b')
+		printf("true_1 ");
+	else
+		printf("false_1 ");
+
+	if(const_char_b >= const_char_c)
+		printf("true_2 ");
+	else 
+		printf("false_2 ");
+
+	
+	if(const_int_1 == 100)
+		if(const_int_2 == 300)
+			printf("a1 ");
+		else
+			printf("a2 ");
+	else 
+		printf("false_3 ");
+
+	while(in_2[1] < 10){
+		in_2[1] = in_2[1] + 1;
+	}
+
+	in_2[2] = foo1(1, 2);
+	printf(in_2[2]);
+	printf(" ");
+
+	in_2[3] = foo2;
+	printf(in_2[3]);
+	printf(" ");
+
+	in_b[2] = foo3('a');
+	printf(in_b[2]);
+	printf(" ");
+
+	in_b[3] = foo4;
+	printf(in_b[3]);
+	printf(" ");
+
+	foo5;
+
+	in_3 = foo6(4);
+	printf(in_3);
+	printf(" ");
+
+	scanf(in_1);
+	printf(in_1);
+	printf(" ");
+
+	scanf(in_a);
+	printf(in_a);
+	printf(" ");
+
+	printf("aaaaa ");
+	printf("bbbbb ", in_1);
+	printf(" ");
+
+	switch_num  = 10;
+
+	switch(switch_num){
+	case 2:
+		printf("case_int_1 ");
+	case 5:
+		printf("case_int_2 ");
+	case 10:
+		printf("case_int_3 ");
+	}
+
+	switch_num = 20;
+	switch(switch_num){
+	case 2:
+		printf("case_int_4 ");
+	case 5:
+		printf("case_int_5 ");
+	case 10:
+		printf("case_int_6 ");
+	default:
+		printf("case_int_default ");
+	}
+
+	swictch_chr = 'a';
+
+	switch(swictch_chr){
+	case 'a':
+		printf("case_char_1 ");
+	case 'b':
+		printf("case_char_2 ");
+	case 'c':
+		printf("case_char_3 ");
+	default:
+		printf("case_char_default ");
+	}
+}
