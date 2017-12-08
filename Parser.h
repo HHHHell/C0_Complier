@@ -22,6 +22,8 @@ private:
 	Token gettoken(int mode);
 	void printresult(std::string str);
 	bool isexists(SymbolItem item);
+	bool isexists(string name);
+	SymbolItem find(string name);
 public:
 	bool result;
 
@@ -43,21 +45,21 @@ public:
 	bool assignSta();
 	bool ifSta();
 	bool switchSta();
-	bool suitationTab();
-	bool suitationSta();
+	bool suitationTab(bool ischar);
+	bool suitationSta(bool ischar);
 	bool defaultSta();
 	bool whileSta();
 	bool funCall();
 	bool retfunCall();
 	bool unretfunCall();
-	bool valueParas();
+	bool valueParas(vector<enum type> paras);
 	bool returnSta();
 	bool printSta();
 	bool scanSta();
 	bool conditionSta();
-	bool expression();
-	bool item();
-	bool factor();
+	bool expression(bool &ischar);
+	bool item(bool &ischar);
+	bool factor(bool &iscahr);
 	bool integer();
 };
 

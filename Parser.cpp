@@ -64,12 +64,29 @@ Token Parser::gettoken(int mode = 0)
 	return ntoken;
 }
 
+bool Parser::isexists(SymbolItem item)
+{
+	string name = item.getname();
+	return isexists(name);
+}
+
+bool Parser::isexists(string name)
+{
+
+}
+
+SymbolItem find(string name)
+{
+
+}
+
 bool Parser::program()
 {
 	using namespace std;
 
 	map<string, SymbolTable>::iterator iter = tables.find("OverAll");
 	ntable = iter->second;
+	nkey = iter->first;
 	Token ntoken = gettoken(1);
 
 	if (ntoken.getType() == CONST)
@@ -619,6 +636,7 @@ bool Parser::retfunDef()
 		return false;
 	}
 	ntable = iter->second;
+	nkey = iter->first;
 
 	Token ntoken = gettoken(1);
 	if (ntoken.getType() == L_BRACK)
@@ -642,6 +660,8 @@ bool Parser::retfunDef()
 		return false;
 	}
 	ntable = iter->second;
+	nkey = iter->first;
+
 	nitem = ntable.find(name);
 	nitem.setparas(paras);
 
@@ -652,6 +672,7 @@ bool Parser::retfunDef()
 		return false;
 	}
 	ntable = iter->second;
+	nkey = iter->first;
 
 	if (ntoken.getType() == L_CURLY)
 	{
@@ -670,6 +691,8 @@ bool Parser::retfunDef()
 
 	iter = tables.find("OverAll");
 	ntable = iter->second;
+	nkey = iter->first;
+
 	return true;
 }
 
@@ -829,6 +852,7 @@ bool Parser::unretfunDef()
 		return false;
 	}
 	ntable = iter->second;
+	nkey = iter->first;
 
 	ntoken = gettoken();
 	if (ntoken.getType() == L_BRACK)
@@ -854,6 +878,8 @@ bool Parser::unretfunDef()
 		return false;
 	}
 	ntable = iter->second;
+	nkey = iter->first;
+
 	nitem = ntable.find(name);
 	nitem.setparas(paras);
 
@@ -864,6 +890,7 @@ bool Parser::unretfunDef()
 		return false;
 	}
 	ntable = iter->second;
+	nkey = iter->first;
 
 	if (ntoken.getType() == L_CURLY)
 	{
@@ -885,6 +912,7 @@ bool Parser::unretfunDef()
 
 	iter = tables.find("OverAll");
 	ntable = iter->second;
+	nkey = iter->first;
 
 	ntoken = gettoken(1);
 	return true;
@@ -892,13 +920,22 @@ bool Parser::unretfunDef()
 
 bool Parser::mainFun()
 {
+	string name;
+	enum type ttype = VOID_TYPE;
+	enum kind kkind = FUNCTION;
+	int line;
+	vector<enum type> paras;
+
 	Token ntoken = gettoken();
 	if (ntoken.getType() != VOID)
 		return false;
-	
+
 	ntoken = gettoken();
 	if (ntoken.getType() != IDENTITY)
 		return false;
+	line = ntoken.getLinenum();
+	name = ntoken.getStrValue();
+
 	string idname = str2lower(ntoken.getStrValue());
 	if (idname != "main")
 		return false;
@@ -910,6 +947,25 @@ bool Parser::mainFun()
 	ntoken = gettoken();
 	if (ntoken.getType() != R_BRACK)
 		return false;
+
+	SymbolItem nitem(name, ttype, kkind, line);
+	nitem.setparas(paras);
+	if (isexists(nitem))
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+	ntable.insert(nitem);
+
+	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
+	map<string, SymbolTable>::iterator iter = tables.find(name);
+	if (iter == tables.end())
+	{
+		cout << "Insert error" << endl;
+		return false;
+	}
+	ntable = iter->second;
+	nkey = iter->first;
 
 	ntoken = gettoken();
 	if (ntoken.getType() != L_CURLY)
@@ -930,6 +986,11 @@ bool Parser::mainFun()
 		ntoken = lex.nextsymbol();
 		pretoken.insert(pretoken.begin(), ntoken);
 	}
+
+	iter = tables.find("OverAll");
+	ntable = iter->second;
+	nkey = iter->first;
+
 	return true;
 }
 
@@ -979,6 +1040,7 @@ bool Parser::statement()
 {
 	Token ntoken = gettoken(1);
 	bool re = false;
+	string name = ntoken.getStrValue();
 	switch (ntoken.getType())
 	{
 	case IF:
@@ -1010,7 +1072,16 @@ bool Parser::statement()
 			ntoken = pretoken[1];
 		if (ntoken.getType() == SEMICOLON || ntoken.getType() == L_BRACK)
 		{
-			re = funCall();
+			SymbolItem item = find(name);
+			if (item.getkind() != FUNCTION)
+			{
+				cout << "Error_3" << endl;
+				return false;
+			}
+			if (item.gettype() == VOID_TYPE)
+				re = unretfunCall();
+			else
+				re = retfunCall();
 			if (!re)
 				return false;
 			ntoken = gettoken();
@@ -1080,24 +1151,48 @@ bool Parser::statement()
 bool Parser::assignSta()
 {
 	Token ntoken = gettoken();
+	bool ischar;
 	if (ntoken.getType() != IDENTITY)
 		return false;
+	string name = ntoken.getStrValue();
+	if (!isexists(name))
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+	SymbolItem item = find(name);
+	enum type ttype = item.gettype();
+
 	ntoken = gettoken();
 	if (ntoken.getType() == L_SQUARE)
 	{
 		ntoken = gettoken(1);
-		bool re = expression();
+		bool re = expression(ischar);
+		if (ischar)
+		{
+			cout << "Error_3" << endl;
+			return false;
+		}
+
 		ntoken = gettoken();
 		if (ntoken.getType() != R_SQUARE)
 			return false;
 		ntoken = gettoken();
 	}
+
 	if (ntoken.getType() != ASSIGN)
 		return false;
+
 	ntoken = gettoken(1);
-	bool re = expression();
+	bool re = expression(ischar);
 	if (!re)
 		return false;
+	if (ttype == CHAR_TYPE && !ischar)
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+
 	printresult("This is an Assign Statement!");
 	return true;
 }
@@ -1160,7 +1255,9 @@ bool Parser::switchSta()
 		ntoken = lex.nextsymbol();
 		pretoken.insert(pretoken.begin(), ntoken);
 	}
-	bool re = expression();
+
+	bool ischar;
+	bool re = expression(ischar);
 	if (!re)
 		return false;
 
@@ -1177,7 +1274,7 @@ bool Parser::switchSta()
 		ntoken = lex.nextsymbol();
 		pretoken.insert(pretoken.begin(), ntoken);
 	}
-	re = suitationTab();
+	re = suitationTab(ischar);
 	if (!re)
 		return false;
 
@@ -1196,15 +1293,15 @@ bool Parser::switchSta()
 	return true;
 }
 
-bool Parser::suitationTab()
+bool Parser::suitationTab(bool ischar)
 {
-	bool re = suitationSta();
+	bool re = suitationSta(ischar);
 	if (!re)
 		return false;
 	Token  ntoken = gettoken(1);
 	while (ntoken.getType() == CASE)
 	{
-		re = suitationSta();
+		re = suitationSta(ischar);
 		if (!re)
 			return false;
 		ntoken = gettoken(1);
@@ -1213,7 +1310,7 @@ bool Parser::suitationTab()
 	return true;
 }
 
-bool Parser::suitationSta()
+bool Parser::suitationSta(bool ischar)
 {
 	Token ntoken = gettoken();
 	if (ntoken.getType() != CASE)
@@ -1222,6 +1319,12 @@ bool Parser::suitationSta()
 	ntoken = gettoken();
 	if (ntoken.getType() != CONST_INT  && ntoken.getType() != CONST_CHAR)
 		return false;
+	if ((ischar && ntoken.getType() == CONST_INT) ||
+		(!ischar && ntoken.getType() == CONST_CHAR))
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
 
 	ntoken = gettoken();
 	if (ntoken.getType() != COLON)
@@ -1303,6 +1406,9 @@ bool Parser::funCall()
 	Token ntoken = gettoken();
 	if (ntoken.getType() != IDENTITY)
 		return false;
+	string name = ntoken.getStrValue();
+	SymbolItem item = find(name);
+	vector<enum type> paras = item.getparas();
 
 	ntoken = gettoken(1);
 	if (ntoken.getType() == L_BRACK)
@@ -1313,7 +1419,7 @@ bool Parser::funCall()
 			ntoken = lex.nextsymbol();
 			pretoken.insert(pretoken.begin(), ntoken);
 		}
-		bool re = valueParas();
+		bool re = valueParas(paras);
 		if (!re)
 			return false;
 
@@ -1333,23 +1439,89 @@ bool Parser::funCall()
 
 bool Parser::retfunCall()
 {
-	bool re = funCall();
-	if (!re)
+	Token ntoken = gettoken();
+	if (ntoken.getType() != IDENTITY)
 		return false;
+	string name = ntoken.getStrValue();
+	SymbolItem item = find(name);
+	vector<enum type> paras = item.getparas();
+
+	ntoken = gettoken(1);
+	if (ntoken.getType() == L_BRACK)
+	{
+		ntoken = gettoken();
+		if (pretoken.size() == 0)
+		{
+			ntoken = lex.nextsymbol();
+			pretoken.insert(pretoken.begin(), ntoken);
+		}
+		bool re = valueParas(paras);
+		if (!re)
+			return false;
+
+		ntoken = gettoken();
+		if (ntoken.getType() != R_BRACK)
+			return false;
+	}
+
+	if (pretoken.size() == 0)
+	{
+		ntoken = lex.nextsymbol();
+		pretoken.insert(pretoken.begin(), ntoken);
+	}
 	printresult("This is a Returned Function Call!");
+	return true;
 }
 
 bool Parser::unretfunCall()
 {
-	bool re = funCall();
-	if (!re)
+	Token ntoken = gettoken();
+	if (ntoken.getType() != IDENTITY)
 		return false;
+	string name = ntoken.getStrValue();
+	SymbolItem item = find(name);
+	vector<enum type> paras = item.getparas();
+
+	ntoken = gettoken(1);
+	if (ntoken.getType() == L_BRACK)
+	{
+		ntoken = gettoken();
+		if (pretoken.size() == 0)
+		{
+			ntoken = lex.nextsymbol();
+			pretoken.insert(pretoken.begin(), ntoken);
+		}
+		bool re = valueParas(paras);
+		if (!re)
+			return false;
+
+		ntoken = gettoken();
+		if (ntoken.getType() != R_BRACK)
+			return false;
+	}
+
+	if (pretoken.size() == 0)
+	{
+		ntoken = lex.nextsymbol();
+		pretoken.insert(pretoken.begin(), ntoken);
+	}
 	printresult("This is a Unreturned Function Call!");
+	return true;
 }
 
-bool Parser::valueParas()
+bool Parser::valueParas(vector<enum type> paras)
 {
-	bool re = expression();
+	bool ischar;
+	int count = 0;
+	bool re = expression(ischar);
+	if (count == paras.size() || (paras[count] == INT_TYPE && ischar) ||
+		(paras[count] == CHAR_TYPE && !ischar))
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+
+	count++;
 	if (!re)
 		return false;
 	
@@ -1358,13 +1530,25 @@ bool Parser::valueParas()
 	{
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
-		re = expression();
+		re = expression(ischar);
 		if (!re)
 			return false;
 
+		if (count == paras.size()||(paras[count]==INT_TYPE && ischar)||
+			(paras[count] == CHAR_TYPE && !ischar))
+		{
+			cout << "Error_3" << endl;
+			return false;
+		}
+		count++;
 		ntoken = gettoken(1);
 	}
-	
+	if (count != paras.size())
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+
 	if (pretoken.size() == 0)
 	{
 		ntoken = lex.nextsymbol();
@@ -1377,6 +1561,7 @@ bool Parser::valueParas()
 
 bool Parser::returnSta()
 {
+	bool ischar;
 	Token ntoken = gettoken();
 	if (ntoken.getType() != RETURN)
 		return false;
@@ -1390,7 +1575,7 @@ bool Parser::returnSta()
 			ntoken = lex.nextsymbol();
 			pretoken.insert(pretoken.begin(), ntoken);
 		}
-		bool re = expression();
+		bool re = expression(ischar);
 		if (!re)
 			return false;
 
@@ -1418,6 +1603,7 @@ bool Parser::printSta()
 	if (ntoken.getType() != L_BRACK)
 		return false;
 
+	bool ischar;
 	ntoken = gettoken(1);
 	if (ntoken.getType() == CONST_STRING)
 	{
@@ -1432,15 +1618,14 @@ bool Parser::printSta()
 				ntoken = lex.nextsymbol();
 				pretoken.insert(pretoken.begin(), ntoken);
 			}
-	
-			bool re = expression();
+			bool re = expression(ischar);
 			if (!re)
 				return false;
 		}
 	}
 	else
 	{
-		bool re = expression();
+		bool re = expression(ischar);
 		if (!re)
 			return false;
 	}
@@ -1496,7 +1681,8 @@ bool Parser::scanSta()
 
 bool Parser::conditionSta()
 {
-	bool re = expression();
+	bool ischar;
+	bool re = expression(ischar);
 	if (!re)
 		return false;
 	Token ntoken = gettoken(1);
@@ -1510,7 +1696,7 @@ bool Parser::conditionSta()
 			ntoken = lex.nextsymbol();
 			pretoken.insert(pretoken.begin(), ntoken);
 		}
-		re = expression();
+		re = expression(ischar);
 		if (!re)
 			return false;
 	}
@@ -1518,7 +1704,7 @@ bool Parser::conditionSta()
 	return true;
 }
 
-bool Parser::expression()
+bool Parser::expression(bool &ischar)
 {
 	Token ntoken = gettoken(1);
 	if (ntoken.getType() == PLUS || ntoken.getType() == MINUS)
@@ -1527,7 +1713,7 @@ bool Parser::expression()
 		ntoken = gettoken(1);
 	}
 
-	bool re = item();
+	bool re = item(ischar);
 	if (!re)
 		return false;
 
@@ -1537,7 +1723,7 @@ bool Parser::expression()
 		pretoken.erase(pretoken.begin());
 
 		ntoken = gettoken(1);
-		bool re = item();
+		bool re = item(ischar);
 		if (!re)
 			return false;
 		ntoken = gettoken(1);
@@ -1546,9 +1732,9 @@ bool Parser::expression()
 	return true;
 }
 
-bool Parser::item()
+bool Parser::item(bool &ischar)
 {
-	bool re = factor();
+	bool re = factor(ischar);
 	if (!re)
 		return false;
 
@@ -1557,7 +1743,7 @@ bool Parser::item()
 	{
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
-		re = factor();
+		re = factor(ischar);
 
 		ntoken = gettoken(1);
 	}
@@ -1566,7 +1752,7 @@ bool Parser::item()
 	return true;
 }
 
-bool Parser::factor()
+bool Parser::factor(bool &ischar)
 {
 	Token ntoken = gettoken(1);
 	bool re = false;
@@ -1580,14 +1766,30 @@ bool Parser::factor()
 		}
 		else
 			ntoken = pretoken[1];
+
 		if (ntoken.getType() == L_SQUARE)
 		{
+			Token stoken = pretoken[0];
+			string name = stoken.getStrValue();
+			SymbolItem item = find(name);
+			if (item.getkind() != VAR_LIST ||
+				(item.gettype() != INT_TYPE && item.gettype() != CHAR_TYPE))
+			{
+				cout << "Error_3" << endl;
+				return false;
+			}
+			if (item.gettype() == INT_TYPE)
+				ischar = false;
+			else
+				ischar = true;
+
 			pretoken.erase(pretoken.begin());
 			pretoken.erase(pretoken.begin());
 
+			bool ichar = false;
 			ntoken = gettoken(1);
-			re = expression();
-			if (!re)
+			re = expression(ichar);
+			if (!re || ichar)
 				return false;
 
 			ntoken = gettoken();
@@ -1596,6 +1798,19 @@ bool Parser::factor()
 		}
 		else if (ntoken.getType() == L_BRACK)
 		{
+			Token stoken = pretoken[0];
+			string name = stoken.getStrValue();
+			SymbolItem item = find(name);
+			if (item.getkind() != FUNCTION || item.gettype() == VOID_TYPE)
+			{
+				cout << "Error_3" << endl;
+				return false;
+			}
+			if (item.gettype() == INT_TYPE)
+				ischar = false;
+			else
+				ischar = true;
+
 			re = retfunCall();
 			if (!re)
 				return false;
@@ -1606,7 +1821,7 @@ bool Parser::factor()
 	case L_BRACK:
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
-		re = expression();
+		re = expression(ischar);
 		if (!re)
 			return false;
 		ntoken = gettoken();
@@ -1614,11 +1829,13 @@ bool Parser::factor()
 			return false;
 		break;
 	case CONST_INT:
+		ischar = false;
 		re = integer();
 		if (!re)
 			return false;
 		break;
 	case CONST_CHAR:
+		ischar = true;
 		pretoken.erase(pretoken.begin()); 
 		break;
 	default:

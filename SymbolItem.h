@@ -27,6 +27,7 @@ public:
 	void setparas(vector<enum type> ps);
 
 	string getname();
+	vector<enum type> getparas();
 	enum type gettype();
 	enum kind getkind();
 	int getoffset();
