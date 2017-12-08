@@ -9,10 +9,12 @@
 using namespace std;
 extern std::string str2lower(std::string str);
 
-Parser::Parser(Lexer &l, SymbolTable &table, Midcodes &m) 
-	: lex(l), stable(table), midcodes(m), result(false)
+Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
+	: lex(l), tables(tlist), midcodes(m), result(false)
 {
-	vector<Token> pretoken;
+	SymbolTable ntable(0);
+	nkey = "OverAll";
+	tables.insert(pair<string, SymbolTable>("OverAll", ntable));
 	pout.open("result\\parser_result.txt");
 }
 
@@ -66,7 +68,10 @@ bool Parser::program()
 {
 	using namespace std;
 
+	map<string, SymbolTable>::iterator iter = tables.find("OverAll");
+	ntable = iter->second;
 	Token ntoken = gettoken(1);
+
 	if (ntoken.getType() == CONST)
 	{
 		bool re = constDeclare();
@@ -203,6 +208,7 @@ bool Parser::program()
 			while (pretoken[0].getType() == VOID || pretoken[0].getType() == INT ||
 				pretoken[0].getType() == CHAR)
 			{
+
 				if (pretoken[0].getType() == VOID)
 				{
 					if (pretoken.size() == 1)
@@ -229,6 +235,14 @@ bool Parser::program()
 					else
 						return false;
 				}
+				else if (pretoken[0].getType() == INT || pretoken[0].getType() == CHAR)
+				{
+					bool re = retfunDef();
+					if (!re)
+						return false;
+				}
+				else
+					return false;
 			}
 		}
 		else
@@ -236,11 +250,13 @@ bool Parser::program()
 
 	}
 	printresult("This is a program!");
+	return true;
 }
 
 bool Parser::constDeclare()
 {
 	Token ntoken = gettoken();
+
 	if (ntoken.getType() != CONST)
 		return false;
 	ntoken = gettoken(1);
@@ -271,16 +287,27 @@ bool Parser::constDeclare()
 
 bool Parser::constDef()
 {
+	string name;
+	enum type ttype;
+	enum kind kkind = CONST_VAR;
+	int value, line, offset, size;
+
 	Token ntoken = gettoken();
 	if (ntoken.getType() != INT && ntoken.getType() != CHAR)
 	{
 		return false;
 	}
+
 	if (ntoken.getType() == INT)
 	{
+		ttype = INT_TYPE;
+		size = 4;
+
 		ntoken = gettoken();
 		if (ntoken.getType() != IDENTITY)
 			return false;
+		name = ntoken.getStrValue();
+		line = ntoken.getLinenum();
 
 		ntoken = gettoken();
 		if (ntoken.getType() != ASSIGN)
@@ -293,13 +320,23 @@ bool Parser::constDef()
 			ntoken = gettoken();
 			sign = -1;
 		}
-		if (ntoken.getType() == PLUS)
+		else if (ntoken.getType() == PLUS)
 			ntoken = gettoken();
 
 		if (ntoken.getType() != CONST_INT)
 			return false;
 		printresult("This is a Const Variable Define!");
-		
+
+		value = sign*ntoken.getIntValue();
+		offset = ntable.alloc(size);
+		SymbolItem nitem(name, ttype, kkind, line, offset, value);	
+		if (isexists(nitem)) 
+		{
+			cout << "Error_3" << endl;
+			return false;
+		}
+		ntable.insert(nitem);
+
 		ntoken = gettoken(1);
 		while (ntoken.getType() == COMMA)
 		{
@@ -307,6 +344,10 @@ bool Parser::constDef()
 			ntoken = gettoken();
 			if (ntoken.getType() != IDENTITY)
 				return false;
+
+			name = ntoken.getStrValue();
+			line = ntoken.getLinenum();
+
 			ntoken = gettoken();
 			if (ntoken.getType() != ASSIGN)
 				return false;
@@ -318,21 +359,36 @@ bool Parser::constDef()
 				ntoken = gettoken();
 				sign = -1;
 			}
-			if (ntoken.getType() == PLUS)
+			else if (ntoken.getType() == PLUS)
 				ntoken = gettoken();
 
 			if (ntoken.getType() != CONST_INT)
 				return false;
 			printresult("This is a Const Variable Define!");
+
+			value = sign*ntoken.getIntValue();
+			offset = ntable.alloc(size);
+			SymbolItem nitem(name, ttype, kkind, line, offset, value);
+			if (isexists(nitem))
+			{
+				cout << "Error_3" << endl;
+				return false;
+			}
+			ntable.insert(nitem);
+
 			ntoken = gettoken(1);
 		}
 	}
 	else
 	{
-//		pretoken.erase(pretoken.begin());
+		ttype = CHAR_TYPE;
+		size = 2;
+
 		ntoken = gettoken();
 		if (ntoken.getType() != IDENTITY)
 			return false;
+		name = ntoken.getStrValue();
+		line = ntoken.getLinenum();
 
 		ntoken = gettoken();
 		if (ntoken.getType() != ASSIGN)
@@ -341,6 +397,17 @@ bool Parser::constDef()
 		ntoken = gettoken();
 		if (ntoken.getType() != CONST_CHAR)
 			return false;
+		
+		value = ntoken.getIntValue();
+		offset = ntable.alloc(size);
+		SymbolItem nitem(name, ttype, kkind, line, offset, value);
+		if (isexists(name))
+		{
+			cout << "Error_3" << endl;
+			return false;
+		}
+		ntable.insert(nitem);
+
 		printresult("This is a Const Variable Define!");
 
 		ntoken = gettoken(1);
@@ -350,17 +417,30 @@ bool Parser::constDef()
 			ntoken = gettoken();
 			if (ntoken.getType() != IDENTITY)
 				return false;
+			name = ntoken.getStrValue();
+			line = ntoken.getLinenum();
+
 			ntoken = gettoken();
 			if (ntoken.getType() != ASSIGN)
 				return false;
 			ntoken = gettoken();
 			if (ntoken.getType() != CONST_CHAR)
 				return false;
+
+			value = ntoken.getIntValue();
+			offset = ntable.alloc(size);
+			SymbolItem nitem(name, ttype, kkind, line, offset, value);
+			if (isexists(nitem))
+			{
+				cout << "Error_3" << endl;
+				return false;
+			}
+			ntable.insert(nitem);
+
 			printresult("This is a Const Variable Define!");
 			ntoken = gettoken(1);
 		}
 	}
-
 	return true;
 }
 
@@ -420,12 +500,32 @@ bool Parser::variableDeclare()
 
 bool Parser::variableDef()
 {
+	string name;
+	enum type ttype;
+	enum kind kkind = VARIABLE;
+	int line, offset, bsize, size;
+
 	Token ntoken = gettoken();
 	if (ntoken.getType() != INT && ntoken.getType() != CHAR)
 		return false;
+	if (ntoken.getType() == INT)
+	{
+		bsize = 4;
+		ttype = INT_TYPE;
+		size = bsize;
+	}
+	else
+	{
+		ttype = CHAR_TYPE;
+		bsize = 2;
+		size = bsize;
+	}
 	ntoken = gettoken();
 	if (ntoken.getType() != IDENTITY)
 		return false;
+	name = ntoken.getStrValue();
+	line = ntoken.getLinenum();
+
 	ntoken = gettoken(1);
 	if (ntoken.getType() == L_SQUARE)
 	{
@@ -433,19 +533,35 @@ bool Parser::variableDef()
 		ntoken = gettoken();
 		if (ntoken.getType() != CONST_INT)
 			return false;
+		size = bsize * ntoken.getIntValue();
 		ntoken = gettoken();
 		if (ntoken.getType() != R_SQUARE)
 			return false;
 	}
+
+	offset = ntable.alloc(size);
+	SymbolItem nitem(name, ttype, kkind, line, offset);
+	if (isexists(nitem))
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+	ntable.insert(nitem);
+
 	printresult("This is a Variable Define!");
 	ntoken = gettoken(1);
 
 	while (ntoken.getType()  == COMMA)
 	{
+		size = bsize;
+
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken();
 		if (ntoken.getType() != IDENTITY)
 			return false;
+		name = ntoken.getStrValue();
+		line = ntoken.getLinenum();
+
 		ntoken = gettoken(1);
 		if (ntoken.getType() == L_SQUARE)
 		{
@@ -453,10 +569,22 @@ bool Parser::variableDef()
 			ntoken = gettoken();
 			if (ntoken.getType() != CONST_INT)
 				return false;
+			size = bsize * ntoken.getIntValue();
+
 			ntoken = gettoken();
 			if (ntoken.getType() != R_SQUARE)
 				return false;
 		}
+
+		offset = ntable.alloc(size);
+		SymbolItem nitem(name, ttype, kkind, line, offset);
+		if (isexists(nitem))
+		{
+			cout << "Error_3" << endl;
+			return false;
+		}
+		ntable.insert(nitem);
+
 		printresult("This is a Variable Define!");
 		ntoken = gettoken(1);
 	}
@@ -465,16 +593,40 @@ bool Parser::variableDef()
 
 bool Parser::retfunDef()
 {
-	bool re = funDefhead();
+	vector<enum type> paras;
+	string name;
+	enum type ttype;
+	enum kind kkind = FUNCTION;
+	int line;
+
+	bool re = funDefhead(ttype, name, line);
 	if (!re)
 		return false;
+
+	SymbolItem nitem(name, ttype, kkind, line);
+	if (isexists(nitem))
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+	ntable.insert(nitem);
+
+	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
+	map<string, SymbolTable>::iterator iter = tables.find(name);
+	if (iter == tables.end())
+	{
+		cout << "Insert error" << endl;
+		return false;
+	}
+	ntable = iter->second;
+
 	Token ntoken = gettoken(1);
 	if (ntoken.getType() == L_BRACK)
 	{
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
 
-		bool re = parameters();
+		bool re = parameters(paras);
 		if (!re)
 			return false;
 		ntoken = gettoken();
@@ -482,6 +634,25 @@ bool Parser::retfunDef()
 			return false;
 		ntoken = gettoken(1);
 	}
+
+	iter = tables.find("OverAll");
+	if (iter == tables.end())
+	{
+		cout << "Insert error" << endl;
+		return false;
+	}
+	ntable = iter->second;
+	nitem = ntable.find(name);
+	nitem.setparas(paras);
+
+	iter = tables.find(name);
+	if (iter == tables.end())
+	{
+		cout << "Insert error" << endl;
+		return false;
+	}
+	ntable = iter->second;
+
 	if (ntoken.getType() == L_CURLY)
 	{
 		pretoken.erase(pretoken.begin());
@@ -497,32 +668,70 @@ bool Parser::retfunDef()
 	printresult("This is a Returned Function Define!");
 	ntoken = gettoken(1);
 
+	iter = tables.find("OverAll");
+	ntable = iter->second;
 	return true;
 }
 
-bool Parser::funDefhead()
+bool Parser::funDefhead(enum type &ttype, string &name, int &line)
 {
 	Token ntoken = gettoken();
 	if (ntoken.getType() != INT && ntoken.getType() != CHAR)
 		return false;
+	if (ntoken.getType() == INT)
+		ttype = INT_TYPE;
+	else
+		ttype = CHAR_TYPE;
+
 	ntoken = gettoken();
 	if (ntoken.getType() != IDENTITY)
 		return false;
-	printresult("This is a Function Head Define!");
+	name = ntoken.getStrValue();
+	line = ntoken.getLinenum();
 
+	printresult("This is a Function Head Define!");
 	ntoken = gettoken(1);
 
 	return true;
 }
 
-bool Parser::parameters()
+bool Parser::parameters(vector<enum type> &paras)
 {
+	string name, fname;
+	int line, offset, size;
+	enum type ttype;
+	enum kind kkind = PARAMETERS;
+	vector<enum type> paras;
+
 	Token ntoken = gettoken();
 	if (ntoken.getType() != INT && ntoken.getType() != CHAR)
 		return false;
+	if (ntoken.getType() == INT)
+	{
+		ttype = INT_TYPE;
+		size = 4;
+	}
+	else
+	{
+		ttype = CHAR_TYPE;
+		size = 2;
+	}
+	paras.insert(paras.end(), ttype);
+
 	ntoken = gettoken();
 	if (ntoken.getType() != IDENTITY)
 		return false;
+	name = ntoken.getStrValue();
+	line = ntoken.getLinenum();
+	offset = ntable.alloc(size);
+	SymbolItem nitem(name, ttype, kkind, line, offset);
+	if (isexists(nitem))
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+	ntable.insert(nitem);
+
 	ntoken = gettoken(1);
 	while (ntoken.getType() == COMMA)
 	{
@@ -530,13 +739,35 @@ bool Parser::parameters()
 		ntoken = gettoken();
 		if (ntoken.getType() != INT && ntoken.getType() != CHAR)
 			return false;
+		if (ntoken.getType() == INT)
+		{
+			ttype = INT_TYPE;
+			size = 4;
+		}
+		else
+		{
+			ttype = CHAR_TYPE;
+			size = 2;
+		}
+		paras.insert(paras.end(), ttype);
+
 		ntoken = gettoken();
 		if (ntoken.getType() != IDENTITY)
 			return false;
+		name = ntoken.getStrValue();
+		line = ntoken.getLinenum();
+		offset = ntable.alloc(size);
+		SymbolItem nitem(name, ttype, kkind, line, offset);
+		if (isexists(nitem))
+		{
+			cout << "Error_3" << endl;
+			return false;
+		}
+		ntable.insert(nitem);
+
 		ntoken = gettoken(1);
 	}
 	printresult("This is a Parameters!");
-//	pretoken.insert(pretoken.begin(), ntoken);
 	return true;
 }
 
@@ -567,12 +798,38 @@ bool Parser::compoundSta()
 
 bool Parser::unretfunDef()
 {
+	string name;
+	vector<enum type> paras;
+	enum type ttype = VOID_TYPE;
+	enum kind kkind = FUNCTION;
+	int line;
+
 	Token ntoken = gettoken();
 	if (ntoken.getType() != VOID)
 		return false;
 	ntoken = gettoken();
 	if (ntoken.getType() != IDENTITY)
 		return false;
+	name = ntoken.getStrValue();
+	line = ntoken.getLinenum();
+
+	SymbolItem nitem(name, ttype, kkind, line);
+	if (isexists(nitem))
+	{
+		cout << "Error_3" << endl;
+		return false;
+	}
+	ntable.insert(nitem);
+
+	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
+	map<string, SymbolTable>::iterator iter = tables.find(name);
+	if (iter == tables.end())
+	{
+		cout << "Insert error" << endl;
+		return false;
+	}
+	ntable = iter->second;
+
 	ntoken = gettoken();
 	if (ntoken.getType() == L_BRACK)
 	{
@@ -581,7 +838,7 @@ bool Parser::unretfunDef()
 			ntoken = lex.nextsymbol();
 			pretoken.insert(pretoken.begin(), ntoken);
 		}
-		bool re = parameters();
+		bool re = parameters(paras);
 		if (!re)
 			return false;
 		ntoken = gettoken();
@@ -589,6 +846,25 @@ bool Parser::unretfunDef()
 			return false;
 		ntoken = gettoken();
 	}
+
+	iter = tables.find("OverAll");
+	if (iter == tables.end())
+	{
+		cout << "Insert error" << endl;
+		return false;
+	}
+	ntable = iter->second;
+	nitem = ntable.find(name);
+	nitem.setparas(paras);
+
+	iter = tables.find(name);
+	if (iter == tables.end())
+	{
+		cout << "Insert error" << endl;
+		return false;
+	}
+	ntable = iter->second;
+
 	if (ntoken.getType() == L_CURLY)
 	{
 		if (pretoken.size() == 0)
@@ -607,8 +883,10 @@ bool Parser::unretfunDef()
 		return false;
 	printresult("This is a Unreturned Function Define!");
 
-	ntoken = gettoken();
-	pretoken.insert(pretoken.begin(), ntoken);
+	iter = tables.find("OverAll");
+	ntable = iter->second;
+
+	ntoken = gettoken(1);
 	return true;
 }
 

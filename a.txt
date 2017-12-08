@@ -1,0 +1,42 @@
+void process
+{
+    int choice;
+    char choice_ch;
+    scanf(choice);
+    choice_ch = choice +'a'-1;
+    switch (choice_ch)
+    {
+        case 'a':
+            expre;
+        case 'b':
+        {
+            scanf(n);
+            ans = fibo(n);
+            printf("fibo:",ans);
+            printspace;
+        }
+        case 'c':
+        {
+            scanf(x,y,kind);
+            ans = operation(x,y,kind);
+            printspace;
+        }
+        case 'd':
+        {
+            scanf(m);
+            display(m);
+        }
+        case 'e':
+        {
+            scanf(_a,_b);
+            printf("gcd:",gcd(_a,_b));
+            printspace;
+        }
+        case 'f':
+            printf("string:!#$%&'()*+,-./:;<=>?@[\]^_`{|}~");
+        default:
+            optimize;
+    }
+}
+void main()
+{}

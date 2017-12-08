@@ -13,15 +13,19 @@ class Parser {
 private:
 	Lexer &lex;
 	Midcodes &midcodes;
-	SymbolTable &stable;
+	map<string, SymbolTable> &tables;
 	vector<Token> pretoken;
-	Token gettoken(int mode);
+	SymbolTable ntable;
+	string nkey;
 	ofstream pout;
+
+	Token gettoken(int mode);
 	void printresult(std::string str);
+	bool isexists(SymbolItem item);
 public:
 	bool result;
 
-	Parser(Lexer &l, SymbolTable &table, Midcodes &m);
+	Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m);
 	~Parser();
 	bool program();
 	bool constDeclare();
@@ -29,8 +33,8 @@ public:
 	bool variableDeclare();
 	bool variableDef();
 	bool retfunDef();
-	bool funDefhead();
-	bool parameters();
+	bool funDefhead(enum type &t, string &name, int &line);
+	bool parameters(vector<enum type> &paras);
 	bool compoundSta();
 	bool unretfunDef();
 	bool mainFun();

@@ -53,9 +53,9 @@ enum symbol
 enum type
 {
 	NOTYPE,
-	INT,
-	CHAR,
-	VOID
+	INT_TYPE,
+	CHAR_TYPE,
+	VOID_TYPE
 };
 
 enum kind

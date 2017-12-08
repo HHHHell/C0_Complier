@@ -1,0 +1,10 @@
+﻿  Parser.cpp
+  Lexer.cpp
+d:\code\vs_project\complier_c0\complier_c0\lexer.cpp(21): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: 参见“fopen”的声明
+  正在生成代码...
+d:\code\vs_project\complier_c0\complier_c0\parser.cpp(238): warning C4715: “Parser::program”: 不是所有的控件路径都返回值
+d:\code\vs_project\complier_c0\complier_c0\parser.cpp(1061): warning C4715: “Parser::retfunCall”: 不是所有的控件路径都返回值
+d:\code\vs_project\complier_c0\complier_c0\parser.cpp(1069): warning C4715: “Parser::unretfunCall”: 不是所有的控件路径都返回值
+  Complier_C0.vcxproj -> D:\Code\VS_project\Complier_C0\Debug\Complier_C0.exe
+  Complier_C0.vcxproj -> D:\Code\VS_project\Complier_C0\Debug\Complier_C0.pdb (Full PDB)
