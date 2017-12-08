@@ -28,7 +28,7 @@ bool SymbolTable::isexists(string name)
 
 void SymbolTable::insert(SymbolItem item)
 {
-	symlist.insert(pair<string, SymbolItem>(item.getname, item));
+	symlist.insert(pair<string, SymbolItem>(item.getname(), item));
 }
 
 SymbolItem SymbolTable::find(string name)

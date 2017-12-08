@@ -6,7 +6,7 @@
 using namespace std;
 class Midcodes
 {
-	vector<string[5]> clist;
+	vector<vector<string>> clist;
 public:
 	Midcodes();
 	void insert(string* slist, int n);

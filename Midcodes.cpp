@@ -14,12 +14,10 @@ Midcodes::Midcodes()
 
 void Midcodes::insert(string* slist, int n)
 {
-	string s[5];
+	vector<string> s;
 	for (int i = 0; i < 5; i++)
 	{
-		if (i < 5)
-			s[i].assign(slist[i]);
-		s[i] = "";
+		s[i].assign(slist[i]);
 	}
 	clist.insert(clist.end(), s);
 }

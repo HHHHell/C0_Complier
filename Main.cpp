@@ -20,12 +20,9 @@ int main(){
 		cout << "Cann't open file: " << filename << endl;
 		return 0;
 	}
-
-/*	while (lex.checkfile())
-	{
-		lex.nextsymbol();
-	}
-*/	Parser parser(lex);
+	Midcodes mcodes;
+	map<string, SymbolTable> tables;
+	Parser parser(lex, tables, mcodes);
 
 	bool re = parser.program();
 	parser.result = re;

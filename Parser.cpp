@@ -760,7 +760,6 @@ bool Parser::parameters(vector<enum type> &paras)
 	int line, offset, size;
 	enum type ttype;
 	enum kind kkind = PARAMETERS;
-	vector<enum type> paras;
 
 	Token ntoken = gettoken();
 	if (ntoken.getType() != INT && ntoken.getType() != CHAR)
