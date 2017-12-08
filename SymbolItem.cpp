@@ -32,6 +32,16 @@ SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d, int off)
 	value = 0;
 }
 
+SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d, int off, int v)
+{
+	name.assign(n);
+	ttype = t;
+	kkind = k;
+	offset = off;
+	decline = d;
+	value = v;
+}
+
 SymbolItem::SymbolItem(const SymbolItem &item)
 {
 	name.assign(item.name);
@@ -46,9 +56,24 @@ void SymbolItem::setoffset(int s)
 	offset = s;
 }
 
+void SymbolItem::setparas(vector<enum type> ps)
+{
+	paras = ps;
+}
+
 void SymbolItem::setvalue(int v)
 {
 	value = v;
+}
+
+string SymbolItem::getname()
+{
+	return name;
+}
+
+vector<enum type> SymbolItem::getparas()
+{
+	return paras;
 }
 
 enum type SymbolItem::gettype()
@@ -64,4 +89,9 @@ enum kind SymbolItem::getkind()
 int SymbolItem::getoffset()
 {
 	return offset;
+}
+
+int SymbolItem::getdecline()
+{
+	return decline;
 }

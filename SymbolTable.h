@@ -7,13 +7,13 @@
 using namespace std;
 class SymbolTable
 {
-public:
 	int level;
+	int bias;
 	map<string, SymbolItem> symlist;
-
+public:
 	SymbolTable();
 	SymbolTable(int l);
-	SymbolTable(const SymbolTable& st);
+//	SymbolTable(const SymbolTable& st);
 	bool isexists(string name);
 	void insert(SymbolItem item);
 	SymbolItem find(string name);

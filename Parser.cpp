@@ -72,12 +72,48 @@ bool Parser::isexists(SymbolItem item)
 
 bool Parser::isexists(string name)
 {
-
+	if (nkey != "OverAll")
+	{
+		bool re = ntable.isexists(name);
+		if (re == true)
+			return true;
+		map<string, SymbolTable>::iterator iter = tables.find("OverAll");
+		SymbolTable ttable = iter->second;
+		return ttable.isexists(name);
+	}
+	else
+	{
+		return ntable.isexists(name);
+	}
 }
 
-SymbolItem find(string name)
+SymbolItem Parser::find(string name)
 {
-
+	if (nkey != "OverAll")
+	{
+		if (ntable.isexists(name))
+		{
+			SymbolItem item = ntable.find(name);
+			return item;
+		}
+		map<string, SymbolTable>::iterator iter = tables.find("OverAll");
+		SymbolTable ttable = iter->second;
+		if (ttable.isexists(name))
+		{
+			SymbolItem item = ttable.find(name);
+			return item;
+		}
+		return SymbolItem();
+	}
+	else
+	{
+		if (ntable.isexists(name))
+		{
+			SymbolItem item = ntable.find(name);
+			return item;
+		}
+		return SymbolItem();
+	}
 }
 
 bool Parser::program()
