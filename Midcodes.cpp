@@ -7,19 +7,24 @@
 
 using namespace std;
 
-Midcodes::Midcodes()
-{
-	vector<string[5]> clist;
-}
-
-void Midcodes::insert(string* slist, int n)
+void Midcodes::insert(vector<string> strs)
 {
 	vector<string> s;
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < strs.size(); i++)
 	{
-		s[i].assign(slist[i]);
+		s[i].assign(strs[i]);
 	}
 	clist.insert(clist.end(), s);
+}
+
+void Midcodes::refill(string s, int index)
+{
+	clist[index].insert(clist[index].end(), s);
+}
+
+int Midcodes::size()
+{
+	return clist.size();
 }
 
 void Midcodes::output(string filename)
@@ -28,10 +33,8 @@ void Midcodes::output(string filename)
 	fout.open(filename);
 	for (int i = 0; i < clist.size(); i++)
 	{
-		for (int j = 0; j < 5; j++)
+		for (int j = 0; j < clist[i].size(); j++)
 		{
-			if (clist[i][j] == "")
-				continue;
 			fout << clist[i][j] << " ";
 		}
 		fout << endl;

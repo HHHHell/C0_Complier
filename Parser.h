@@ -24,6 +24,8 @@ private:
 	bool isexists(SymbolItem item);
 	bool isexists(string name);
 	SymbolItem find(string name);
+	string genvar();
+	string genlabel();
 public:
 	bool result;
 
@@ -57,9 +59,9 @@ public:
 	bool printSta();
 	bool scanSta();
 	bool conditionSta();
-	bool expression(bool &ischar);
-	bool item(bool &ischar);
-	bool factor(bool &iscahr);
+	bool expression(bool &ischar, string& result);
+	bool item(bool &ischar, vector<string>& exp);
+	bool factor(bool &iscahr, vector<string>& exp);
 	bool integer();
 };
 

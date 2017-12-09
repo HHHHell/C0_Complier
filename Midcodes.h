@@ -8,7 +8,8 @@ class Midcodes
 {
 	vector<vector<string>> clist;
 public:
-	Midcodes();
-	void insert(string* slist, int n);
+	int size();
+	void refill(string s, int index);
+	void insert(vector<string> strs);
 	void output(string filename);
 };

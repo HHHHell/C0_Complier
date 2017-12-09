@@ -9,6 +9,12 @@
 using namespace std;
 extern std::string str2lower(std::string str);
 
+string type2string(enum type ttype)
+{
+	string list[] = {"null", "int", "char", "void"};
+	return list[ttype];
+}
+
 Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 	: lex(l), tables(tlist), midcodes(m), result(false)
 {
@@ -25,6 +31,7 @@ Parser::~Parser()
 		pout << "\nError!" << endl;
 	pout.flush();
 	pout.close();
+	midcodes.output("result\\midcodes.txt");
 }
 
 void Parser::printresult(string str)
@@ -113,6 +120,18 @@ SymbolItem Parser::find(string name)
 		}
 		return SymbolItem();
 	}
+}
+
+string Parser::genvar()
+{
+	static int num = 0;
+	return "#var" + to_string(num);
+}
+
+string Parser::genlabel()
+{
+	static int num = 0;
+	return ".label" + to_string(num);
 }
 
 bool Parser::program()
@@ -645,6 +664,8 @@ bool Parser::variableDef()
 
 bool Parser::retfunDef()
 {
+	int index = midcodes.size();
+
 	vector<enum type> paras;
 	string name;
 	enum type ttype;
@@ -662,7 +683,6 @@ bool Parser::retfunDef()
 		return false;
 	}
 	ntable->insert(nitem);
-
 	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
 	map<string, SymbolTable>::iterator iter = tables.find(name);
 	if (iter == tables.end())
@@ -672,6 +692,9 @@ bool Parser::retfunDef()
 	}
 	ntable = &(iter->second);
 	nkey = iter->first;
+
+	vector<string> tmp = { type2string(ttype), name };
+	midcodes.insert(tmp);
 
 	Token ntoken = gettoken(1);
 	if (ntoken.getType() == L_BRACK)
@@ -696,10 +719,8 @@ bool Parser::retfunDef()
 	}
 	ntable = &(iter->second);
 	nkey = iter->first;
-
 	map<string, SymbolItem>::iterator iter2 = (ntable->symlist).find(name);
 	iter2->second.setparas(paras);
-
 	iter = tables.find(name);
 	if (iter == tables.end())
 	{
@@ -708,6 +729,8 @@ bool Parser::retfunDef()
 	}
 	ntable = &(iter->second);
 	nkey = iter->first;
+
+	midcodes.refill(to_string(paras.size()), index);
 
 	if (ntoken.getType() == L_CURLY)
 	{
@@ -778,6 +801,7 @@ bool Parser::parameters(vector<enum type> &paras)
 	ntoken = gettoken();
 	if (ntoken.getType() != IDENTITY)
 		return false;
+
 	name = ntoken.getStrValue();
 	line = ntoken.getLinenum();
 	offset = ntable->alloc(size);
@@ -788,6 +812,9 @@ bool Parser::parameters(vector<enum type> &paras)
 		return false;
 	}
 	ntable->insert(nitem);
+
+	vector<string> tmp = { "para",type2string(ttype), name };
+	midcodes.insert(tmp);
 
 	ntoken = gettoken(1);
 	while (ntoken.getType() == COMMA)
@@ -822,6 +849,9 @@ bool Parser::parameters(vector<enum type> &paras)
 		}
 		ntable->insert(nitem);
 
+		vector<string> tmp = { "para", type2string(ttype), name };
+		midcodes.insert(tmp);
+
 		ntoken = gettoken(1);
 	}
 	printresult("This is a Parameters!");
@@ -855,6 +885,8 @@ bool Parser::compoundSta()
 
 bool Parser::unretfunDef()
 {
+	int index = midcodes.size();
+
 	string name;
 	vector<enum type> paras;
 	enum type ttype = VOID_TYPE;
@@ -888,6 +920,9 @@ bool Parser::unretfunDef()
 	ntable = &(iter->second);
 	nkey = iter->first;
 
+	vector<string> tmp = { type2string(ttype), name };
+	midcodes.insert(tmp);
+
 	ntoken = gettoken();
 	if (ntoken.getType() == L_BRACK)
 	{
@@ -913,10 +948,8 @@ bool Parser::unretfunDef()
 	}
 	ntable = &(iter->second);
 	nkey = iter->first;
-
 	map<string, SymbolItem>::iterator iter2 = (ntable->symlist).find(name);
 	iter2->second.setparas(paras);
-
 	iter = tables.find(name);
 	if (iter == tables.end())
 	{
@@ -925,6 +958,8 @@ bool Parser::unretfunDef()
 	}
 	ntable = &(iter->second);
 	nkey = iter->first;
+
+	midcodes.refill(to_string(paras.size()), index);
 
 	if (ntoken.getType() == L_CURLY)
 	{
@@ -1516,6 +1551,9 @@ bool Parser::unretfunCall()
 	SymbolItem item = find(name);
 	vector<enum type> paras = item.getparas();
 
+	vector<string> tmp = { "call", name, to_string(paras.size()) };
+	midcodes.insert(tmp);
+
 	ntoken = gettoken(1);
 	if (ntoken.getType() == L_BRACK)
 	{
@@ -1738,16 +1776,23 @@ bool Parser::conditionSta()
 	return true;
 }
 
-bool Parser::expression(bool &ischar)
+bool Parser::expression(bool &ischar, string &result)
 {
 	Token ntoken = gettoken(1);
+	vector<string> exp;
+
 	if (ntoken.getType() == PLUS || ntoken.getType() == MINUS)
 	{
+		if (ntoken.getType() == PLUS)
+			exp.insert(exp.end(), "+");
+		else
+			exp.insert(exp.end(), "-");
+
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
 	}
 
-	bool re = item(ischar);
+	bool re = item(ischar, exp);
 	if (!re)
 		return false;
 
@@ -1757,18 +1802,19 @@ bool Parser::expression(bool &ischar)
 		pretoken.erase(pretoken.begin());
 
 		ntoken = gettoken(1);
-		bool re = item(ischar);
+		bool re = item(ischar,exp);
 		if (!re)
 			return false;
 		ntoken = gettoken(1);
 	}
+
 	printresult("This is an Expression!");
 	return true;
 }
 
-bool Parser::item(bool &ischar)
+bool Parser::item(bool &ischar, vector<string>& exp)
 {
-	bool re = factor(ischar);
+	bool re = factor(ischar, exp);
 	if (!re)
 		return false;
 
@@ -1777,7 +1823,7 @@ bool Parser::item(bool &ischar)
 	{
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
-		re = factor(ischar);
+		re = factor(ischar, exp);
 
 		ntoken = gettoken(1);
 	}
@@ -1786,7 +1832,7 @@ bool Parser::item(bool &ischar)
 	return true;
 }
 
-bool Parser::factor(bool &ischar)
+bool Parser::factor(bool &ischar, vector<string>& exp)
 {
 	Token ntoken = gettoken(1);
 	bool re = false;
