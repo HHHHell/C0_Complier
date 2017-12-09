@@ -10,25 +10,24 @@ SymbolTable::SymbolTable()
 {
 	level = -1;
 	bias = 0;
-	vector<SymbolItem> symlist;
 }
 
 SymbolTable::SymbolTable(int l)
 {
 	level = l;
 	bias = 0;
-	vector<SymbolItem> symlist;
 }
 
 bool SymbolTable::isexists(string name)
 {
 	map<string, SymbolItem>::iterator iter = symlist.find(name);
-	return iter == symlist.end();
+	return iter != symlist.end();
 }
 
 void SymbolTable::insert(SymbolItem item)
 {
 	symlist.insert(pair<string, SymbolItem>(item.getname(), item));
+	cout << symlist.size() << " Insert " << item.getname() << endl;
 }
 
 SymbolItem SymbolTable::find(string name)

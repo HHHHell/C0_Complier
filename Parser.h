@@ -15,7 +15,7 @@ private:
 	Midcodes &midcodes;
 	map<string, SymbolTable> &tables;
 	vector<Token> pretoken;
-	SymbolTable ntable;
+	SymbolTable *ntable;
 	string nkey;
 	ofstream pout;
 

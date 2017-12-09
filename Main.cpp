@@ -22,6 +22,9 @@ int main(){
 	}
 	Midcodes mcodes;
 	map<string, SymbolTable> tables;
+	SymbolTable ntable(0);	
+	tables.insert(pair<string, SymbolTable>("OverAll", ntable));
+
 	Parser parser(lex, tables, mcodes);
 
 	bool re = parser.program();

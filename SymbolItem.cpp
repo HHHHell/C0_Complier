@@ -47,8 +47,10 @@ SymbolItem::SymbolItem(const SymbolItem &item)
 	name.assign(item.name);
 	ttype = item.ttype;
 	kkind = item.kkind;
+	decline = item.decline;
 	offset = item.offset;
 	value = item.value;
+	paras = item.paras;
 }
 
 void SymbolItem::setoffset(int s)

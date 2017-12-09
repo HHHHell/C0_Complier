@@ -12,9 +12,8 @@ extern std::string str2lower(std::string str);
 Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 	: lex(l), tables(tlist), midcodes(m), result(false)
 {
-	SymbolTable ntable(0);
+	ntable = &(tables.find("OverAll")->second);
 	nkey = "OverAll";
-	tables.insert(pair<string, SymbolTable>("OverAll", ntable));
 	pout.open("result\\parser_result.txt");
 }
 
@@ -74,16 +73,16 @@ bool Parser::isexists(string name)
 {
 	if (nkey != "OverAll")
 	{
-		bool re = ntable.isexists(name);
+		bool re = ntable->isexists(name);
 		if (re == true)
 			return true;
 		map<string, SymbolTable>::iterator iter = tables.find("OverAll");
-		SymbolTable ttable = iter->second;
+		SymbolTable &ttable = iter->second;
 		return ttable.isexists(name);
 	}
 	else
 	{
-		return ntable.isexists(name);
+		return ntable->isexists(name);
 	}
 }
 
@@ -91,13 +90,13 @@ SymbolItem Parser::find(string name)
 {
 	if (nkey != "OverAll")
 	{
-		if (ntable.isexists(name))
+		if (ntable->isexists(name))
 		{
-			SymbolItem item = ntable.find(name);
+			SymbolItem item = ntable->find(name);
 			return item;
 		}
 		map<string, SymbolTable>::iterator iter = tables.find("OverAll");
-		SymbolTable ttable = iter->second;
+		SymbolTable &ttable = iter->second;
 		if (ttable.isexists(name))
 		{
 			SymbolItem item = ttable.find(name);
@@ -107,9 +106,9 @@ SymbolItem Parser::find(string name)
 	}
 	else
 	{
-		if (ntable.isexists(name))
+		if (ntable->isexists(name))
 		{
-			SymbolItem item = ntable.find(name);
+			SymbolItem item = ntable->find(name);
 			return item;
 		}
 		return SymbolItem();
@@ -120,9 +119,6 @@ bool Parser::program()
 {
 	using namespace std;
 
-	map<string, SymbolTable>::iterator iter = tables.find("OverAll");
-	ntable = iter->second;
-	nkey = iter->first;
 	Token ntoken = gettoken(1);
 
 	if (ntoken.getType() == CONST)
@@ -381,14 +377,14 @@ bool Parser::constDef()
 		printresult("This is a Const Variable Define!");
 
 		value = sign*ntoken.getIntValue();
-		offset = ntable.alloc(size);
+		offset = ntable->alloc(size);
 		SymbolItem nitem(name, ttype, kkind, line, offset, value);	
 		if (isexists(nitem)) 
 		{
 			cout << "Error_3" << endl;
 			return false;
 		}
-		ntable.insert(nitem);
+		ntable->insert(nitem);
 
 		ntoken = gettoken(1);
 		while (ntoken.getType() == COMMA)
@@ -420,14 +416,14 @@ bool Parser::constDef()
 			printresult("This is a Const Variable Define!");
 
 			value = sign*ntoken.getIntValue();
-			offset = ntable.alloc(size);
+			offset = ntable->alloc(size);
 			SymbolItem nitem(name, ttype, kkind, line, offset, value);
 			if (isexists(nitem))
 			{
 				cout << "Error_3" << endl;
 				return false;
 			}
-			ntable.insert(nitem);
+			ntable->insert(nitem);
 
 			ntoken = gettoken(1);
 		}
@@ -452,14 +448,14 @@ bool Parser::constDef()
 			return false;
 		
 		value = ntoken.getIntValue();
-		offset = ntable.alloc(size);
+		offset = ntable->alloc(size);
 		SymbolItem nitem(name, ttype, kkind, line, offset, value);
 		if (isexists(name))
 		{
 			cout << "Error_3" << endl;
 			return false;
 		}
-		ntable.insert(nitem);
+		ntable->insert(nitem);
 
 		printresult("This is a Const Variable Define!");
 
@@ -481,14 +477,14 @@ bool Parser::constDef()
 				return false;
 
 			value = ntoken.getIntValue();
-			offset = ntable.alloc(size);
+			offset = ntable->alloc(size);
 			SymbolItem nitem(name, ttype, kkind, line, offset, value);
 			if (isexists(nitem))
 			{
 				cout << "Error_3" << endl;
 				return false;
 			}
-			ntable.insert(nitem);
+			ntable->insert(nitem);
 
 			printresult("This is a Const Variable Define!");
 			ntoken = gettoken(1);
@@ -582,6 +578,7 @@ bool Parser::variableDef()
 	ntoken = gettoken(1);
 	if (ntoken.getType() == L_SQUARE)
 	{
+		kkind = VAR_LIST;
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken();
 		if (ntoken.getType() != CONST_INT)
@@ -592,18 +589,19 @@ bool Parser::variableDef()
 			return false;
 	}
 
-	offset = ntable.alloc(size);
+	offset = ntable->alloc(size);
 	SymbolItem nitem(name, ttype, kkind, line, offset);
 	if (isexists(nitem))
 	{
 		cout << "Error_3" << endl;
 		return false;
 	}
-	ntable.insert(nitem);
+	ntable->insert(nitem);
 
 	printresult("This is a Variable Define!");
 	ntoken = gettoken(1);
 
+	kkind = VARIABLE;
 	while (ntoken.getType()  == COMMA)
 	{
 		size = bsize;
@@ -618,6 +616,7 @@ bool Parser::variableDef()
 		ntoken = gettoken(1);
 		if (ntoken.getType() == L_SQUARE)
 		{
+			kkind = VAR_LIST;
 			pretoken.erase(pretoken.begin());
 			ntoken = gettoken();
 			if (ntoken.getType() != CONST_INT)
@@ -629,14 +628,14 @@ bool Parser::variableDef()
 				return false;
 		}
 
-		offset = ntable.alloc(size);
+		offset = ntable->alloc(size);
 		SymbolItem nitem(name, ttype, kkind, line, offset);
 		if (isexists(nitem))
 		{
 			cout << "Error_3" << endl;
 			return false;
 		}
-		ntable.insert(nitem);
+		ntable->insert(nitem);
 
 		printresult("This is a Variable Define!");
 		ntoken = gettoken(1);
@@ -662,7 +661,7 @@ bool Parser::retfunDef()
 		cout << "Error_3" << endl;
 		return false;
 	}
-	ntable.insert(nitem);
+	ntable->insert(nitem);
 
 	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
 	map<string, SymbolTable>::iterator iter = tables.find(name);
@@ -671,7 +670,7 @@ bool Parser::retfunDef()
 		cout << "Insert error" << endl;
 		return false;
 	}
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
 	Token ntoken = gettoken(1);
@@ -695,11 +694,11 @@ bool Parser::retfunDef()
 		cout << "Insert error" << endl;
 		return false;
 	}
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
-	nitem = ntable.find(name);
-	nitem.setparas(paras);
+	map<string, SymbolItem>::iterator iter2 = (ntable->symlist).find(name);
+	iter2->second.setparas(paras);
 
 	iter = tables.find(name);
 	if (iter == tables.end())
@@ -707,7 +706,7 @@ bool Parser::retfunDef()
 		cout << "Insert error" << endl;
 		return false;
 	}
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
 	if (ntoken.getType() == L_CURLY)
@@ -726,7 +725,7 @@ bool Parser::retfunDef()
 	ntoken = gettoken(1);
 
 	iter = tables.find("OverAll");
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
 	return true;
@@ -781,14 +780,14 @@ bool Parser::parameters(vector<enum type> &paras)
 		return false;
 	name = ntoken.getStrValue();
 	line = ntoken.getLinenum();
-	offset = ntable.alloc(size);
+	offset = ntable->alloc(size);
 	SymbolItem nitem(name, ttype, kkind, line, offset);
 	if (isexists(nitem))
 	{
 		cout << "Error_3" << endl;
 		return false;
 	}
-	ntable.insert(nitem);
+	ntable->insert(nitem);
 
 	ntoken = gettoken(1);
 	while (ntoken.getType() == COMMA)
@@ -814,14 +813,14 @@ bool Parser::parameters(vector<enum type> &paras)
 			return false;
 		name = ntoken.getStrValue();
 		line = ntoken.getLinenum();
-		offset = ntable.alloc(size);
+		offset = ntable->alloc(size);
 		SymbolItem nitem(name, ttype, kkind, line, offset);
 		if (isexists(nitem))
 		{
 			cout << "Error_3" << endl;
 			return false;
 		}
-		ntable.insert(nitem);
+		ntable->insert(nitem);
 
 		ntoken = gettoken(1);
 	}
@@ -877,7 +876,7 @@ bool Parser::unretfunDef()
 		cout << "Error_3" << endl;
 		return false;
 	}
-	ntable.insert(nitem);
+	ntable->insert(nitem);
 
 	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
 	map<string, SymbolTable>::iterator iter = tables.find(name);
@@ -886,7 +885,7 @@ bool Parser::unretfunDef()
 		cout << "Insert error" << endl;
 		return false;
 	}
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
 	ntoken = gettoken();
@@ -912,11 +911,11 @@ bool Parser::unretfunDef()
 		cout << "Insert error" << endl;
 		return false;
 	}
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
-	nitem = ntable.find(name);
-	nitem.setparas(paras);
+	map<string, SymbolItem>::iterator iter2 = (ntable->symlist).find(name);
+	iter2->second.setparas(paras);
 
 	iter = tables.find(name);
 	if (iter == tables.end())
@@ -924,7 +923,7 @@ bool Parser::unretfunDef()
 		cout << "Insert error" << endl;
 		return false;
 	}
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
 	if (ntoken.getType() == L_CURLY)
@@ -946,7 +945,7 @@ bool Parser::unretfunDef()
 	printresult("This is a Unreturned Function Define!");
 
 	iter = tables.find("OverAll");
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
 	ntoken = gettoken(1);
@@ -990,7 +989,7 @@ bool Parser::mainFun()
 		cout << "Error_3" << endl;
 		return false;
 	}
-	ntable.insert(nitem);
+	ntable->insert(nitem);
 
 	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
 	map<string, SymbolTable>::iterator iter = tables.find(name);
@@ -999,7 +998,7 @@ bool Parser::mainFun()
 		cout << "Insert error" << endl;
 		return false;
 	}
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
 	ntoken = gettoken();
@@ -1023,7 +1022,7 @@ bool Parser::mainFun()
 	}
 
 	iter = tables.find("OverAll");
-	ntable = iter->second;
+	ntable = &(iter->second);
 	nkey = iter->first;
 
 	return true;
@@ -1222,12 +1221,12 @@ bool Parser::assignSta()
 	bool re = expression(ischar);
 	if (!re)
 		return false;
-	if (ttype == CHAR_TYPE && !ischar)
+/*	if (ttype == CHAR_TYPE && !ischar)
 	{
 		cout << "Error_3" << endl;
 		return false;
 	}
-
+*/
 	printresult("This is an Assign Statement!");
 	return true;
 }
@@ -1354,13 +1353,13 @@ bool Parser::suitationSta(bool ischar)
 	ntoken = gettoken();
 	if (ntoken.getType() != CONST_INT  && ntoken.getType() != CONST_CHAR)
 		return false;
-	if ((ischar && ntoken.getType() == CONST_INT) ||
+/*	if ((ischar && ntoken.getType() == CONST_INT) ||
 		(!ischar && ntoken.getType() == CONST_CHAR))
 	{
 		cout << "Error_3" << endl;
 		return false;
 	}
-
+*/
 	ntoken = gettoken();
 	if (ntoken.getType() != COLON)
 		return false;

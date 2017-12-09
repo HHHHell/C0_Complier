@@ -9,8 +9,8 @@ class SymbolTable
 {
 	int level;
 	int bias;
-	map<string, SymbolItem> symlist;
 public:
+	map<string, SymbolItem> symlist;
 	SymbolTable();
 	SymbolTable(int l);
 //	SymbolTable(const SymbolTable& st);
