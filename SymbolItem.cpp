@@ -10,6 +10,7 @@ SymbolItem::SymbolItem() :name(""), ttype(NOTYPE), kkind(NOKIND)
 	decline = -1;
 	offset = -1;
 	value = 0;
+	str = "";
 }
 
 SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d)
@@ -20,6 +21,7 @@ SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d)
 	decline = d;
 	offset = -1;
 	value = 0;
+	str = "";
 }
 
 SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d, int off)
@@ -30,6 +32,7 @@ SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d, int off)
 	offset = off;
 	decline = d;
 	value = 0;
+	str = "";
 }
 
 SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d, int off, int v)
@@ -40,6 +43,16 @@ SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d, int off, int v
 	offset = off;
 	decline = d;
 	value = v;
+	str = "";
+}
+
+SymbolItem::SymbolItem(string n, string strvalue) : ttype(NOTYPE), kkind(NOKIND)
+{
+	name.assign(n);
+	decline = -1;
+	offset = -1;
+	value = 0;
+	str.assign(strvalue);
 }
 
 SymbolItem::SymbolItem(const SymbolItem &item)
@@ -51,6 +64,7 @@ SymbolItem::SymbolItem(const SymbolItem &item)
 	offset = item.offset;
 	value = item.value;
 	paras = item.paras;
+	str.assign(item.str);
 }
 
 void SymbolItem::setoffset(int s)

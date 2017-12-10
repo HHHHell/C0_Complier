@@ -22,8 +22,12 @@ int main(){
 	}
 	Midcodes mcodes;
 	map<string, SymbolTable> tables;
+
 	SymbolTable ntable(0);	
 	tables.insert(pair<string, SymbolTable>("OverAll", ntable));
+
+	SymbolTable ttable(0);
+	tables.insert(pair<string, SymbolTable>("#StringConst", ttable));
 
 	Parser parser(lex, tables, mcodes);
 
@@ -31,5 +35,7 @@ int main(){
 	parser.result = re;
 	if (!re)
 		cout << "Error!" << endl;
+
+	mcodes.output("result//mcodes.txt");
 	return 0;
 }

@@ -19,12 +19,16 @@ private:
 	string nkey;
 	ofstream pout;
 
+	int namenum = 0;
+
 	Token gettoken(int mode);
 	void printresult(std::string str);
 	bool isexists(SymbolItem item);
 	bool isexists(string name);
 	SymbolItem find(string name);
 	string genvar();
+	string genvar(int value);
+	string genvar(string str);
 	string genlabel();
 public:
 	bool result;
@@ -62,7 +66,7 @@ public:
 	bool expression(bool &ischar, string& result);
 	bool item(bool &ischar, string& result);
 	bool factor(bool &iscahr, string& result);
-	bool integer();
+	bool integer(int& value);
 };
 
 #endif // !PARSE_H_

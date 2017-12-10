@@ -12,7 +12,9 @@ void Midcodes::insert(vector<string> strs)
 	vector<string> s;
 	for (int i = 0; i < strs.size(); i++)
 	{
-		s[i].assign(strs[i]);
+		string str;
+		str.assign(strs[i]);
+		s.insert(s.end(), str);
 	}
 	clist.insert(clist.end(), s);
 }
@@ -22,7 +24,9 @@ void Midcodes::insert(vector<string> strs, int index)
 	vector<string> s;
 	for (int i = 0; i < strs.size(); i++)
 	{
-		s[i].assign(strs[i]);
+		string str;
+		str.assign(strs[i]);
+		s.insert(s.end(), str);
 	}
 	vector<vector<string>>::iterator iter = clist.begin();
 	if (index == clist.size())

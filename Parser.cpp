@@ -15,74 +15,6 @@ string type2string(enum type ttype)
 	return list[ttype];
 }
 
-string handleexp(vector<string> exp)
-{
-	vector<string> repexp;
-	vector<string> opstack;
-
-	for (int i = 0; i < exp.size(); i++)
-	{
-		string str = exp[i];
-		if (str != "+" && str != "-" && str != "*" && str != "/" && str != "(" && str != ")")
-		{
-			repexp.insert(repexp.end(), str);
-		}
-		else if (opstack.size() == 0)
-		{
-			opstack.insert(opstack.end(), str);
-		}
-		else if (str == "(")
-		{
-			opstack.insert(opstack.end(), str);
-		}
-		else if (str == ")")
-		{
-			while (opstack.size() != 0 && opstack[opstack.size() - 1] != "(")
-			{
-				string s = opstack[opstack.size() - 1];
-				repexp.insert(repexp.end(), s);
-				opstack.pop_back();
-			}
-			opstack.pop_back();
-		}
-		else if (str == "*" || str == "/")
-		{
-			while (opstack.size() != 0 && (opstack[opstack.size() - 1] == "*" || opstack[opstack.size() - 1] == "/"))
-			{
-				string s = opstack[opstack.size() - 1];
-				repexp.insert(repexp.end(), s);
-				opstack.pop_back();
-			}
-			opstack.insert(opstack.end(), str);
-		}
-		else
-		{
-			while (opstack.size() != 0 && opstack[opstack.size() - 1] != "(")
-			{
-				string s = opstack[opstack.size() - 1];
-				repexp.insert(repexp.end(), s);
-				opstack.pop_back();
-			}
-			opstack.insert(opstack.end(), str);
-		}
-	}
-
-	while (opstack.size() != 0)
-	{
-		string s = opstack[opstack.size() - 1];
-		repexp.insert(repexp.end(), s);
-		opstack.pop_back();
-	}
-
-	for (int i = 0; i < repexp.size(); i++)
-	{
-		cout << repexp[i] << " ";
-	}
-	cout << endl;
-
-	return "aa";
-}
-
 Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 	: lex(l), tables(tlist), midcodes(m), result(false)
 {
@@ -99,7 +31,6 @@ Parser::~Parser()
 		pout << "\nError!" << endl;
 	pout.flush();
 	pout.close();
-	midcodes.output("result\\midcodes.txt");
 }
 
 void Parser::printresult(string str)
@@ -192,12 +123,30 @@ SymbolItem Parser::find(string name)
 
 string Parser::genvar()
 {
-	static int num = 0;
-	string name = "#var" + to_string(num);
+	string name = "#var" + to_string(namenum);
 	int off = ntable->alloc(4);
 	SymbolItem item(name, INT_TYPE, VARIABLE, -1, off);
 	ntable->insert(item);
 	return name;
+}
+
+string Parser::genvar(int value)
+{
+	string name = "#var" + to_string(namenum);
+	int off = ntable->alloc(4);
+	SymbolItem item(name, INT_TYPE, VARIABLE, value, off);
+	ntable->insert(item);
+	return name;
+}
+
+string Parser::genvar(string str)
+{
+	string name = "#var" + to_string(namenum);
+	SymbolItem item(name, str);
+	map<string, SymbolTable>::iterator iter = tables.find("#StringConst");
+	iter->second.insert(item);
+	return name;
+
 }
 
 string Parser::genlabel()
@@ -1060,7 +1009,7 @@ bool Parser::unretfunDef()
 
 bool Parser::mainFun()
 {
-	vector<string> tmp = { "func", "void", "main" };
+	vector<string> tmp = { "func", "void", "main" , "0"};
 	midcodes.insert(tmp);
 
 	string name;
@@ -1376,7 +1325,7 @@ bool Parser::ifSta()
 	tmp.insert(tmp.end(), ifbranch);
 	midcodes.insert(tmp);
 
-	vector<string> tmp = { "goto", elsebranch };
+	tmp = { "goto", elsebranch };
 	midcodes.insert(tmp);
 
 	if (!re)
@@ -1596,7 +1545,7 @@ bool Parser::whileSta()
 	tmp.insert(tmp.end(), loop);
 	midcodes.insert(tmp);
 
-	vector<string> tmp = { "goto", endloop };
+	tmp = { "goto", endloop };
 	midcodes.insert(tmp);
 
 
@@ -1843,6 +1792,7 @@ bool Parser::printSta()
 	if (ntoken.getType() == CONST_STRING)
 	{
 		string str = ntoken.getStrValue();
+		str = genvar(str);
 		midcodes.insert({"print", str});
 
 		ntoken = gettoken();
@@ -2171,11 +2121,14 @@ bool Parser::factor(bool &ischar, string &result)
 		if (ntoken.getType() != R_BRACK)
 			return false;
 		break;
+	case PLUS:
+	case MINUS:
 	case CONST_INT:
-		result = to_string(ntoken.getIntValue());
 		ischar = false;
-
-		re = integer();
+		int value;
+		re = integer(value);
+		result = genvar(value);
+		midcodes.insert({"li", result, to_string(value)});
 		if (!re)
 			return false;
 		break;
@@ -2192,13 +2145,20 @@ bool Parser::factor(bool &ischar, string &result)
 	return true;
 }
 
-bool Parser::integer()
+bool Parser::integer(int& value)
 {
 	Token ntoken = gettoken();
+	int sign = 1;
 	if (ntoken.getType() == PLUS || ntoken.getType() == MINUS)
+	{
+		if (ntoken.getType() == MINUS)
+			sign = -1;
 		ntoken = gettoken();
+	}
 	if (ntoken.getType() != CONST_INT)
 		return false;
+	int tmp = ntoken.getIntValue();
+	value = tmp*sign;
 	ntoken = gettoken(1);
 	return true;
 }
