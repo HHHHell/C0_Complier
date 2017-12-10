@@ -19,7 +19,7 @@ private:
 	string nkey;
 	ofstream pout;
 
-	int namenum = 0;
+	int varnum = 0;
 
 	Token gettoken(int mode);
 	void printresult(std::string str);

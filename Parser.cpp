@@ -123,7 +123,7 @@ SymbolItem Parser::find(string name)
 
 string Parser::genvar()
 {
-	string name = "#var" + to_string(namenum);
+	string name = "#var" + to_string(varnum++);
 	int off = ntable->alloc(4);
 	SymbolItem item(name, INT_TYPE, VARIABLE, -1, off);
 	ntable->insert(item);
@@ -132,7 +132,7 @@ string Parser::genvar()
 
 string Parser::genvar(int value)
 {
-	string name = "#var" + to_string(namenum);
+	string name = "#var" + to_string(varnum++);
 	int off = ntable->alloc(4);
 	SymbolItem item(name, INT_TYPE, VARIABLE, value, off);
 	ntable->insert(item);
@@ -141,18 +141,18 @@ string Parser::genvar(int value)
 
 string Parser::genvar(string str)
 {
-	string name = "#var" + to_string(namenum);
+	static int strnum;
+	string name = "#string" + to_string(strnum++);
 	SymbolItem item(name, str);
 	map<string, SymbolTable>::iterator iter = tables.find("#StringConst");
 	iter->second.insert(item);
 	return name;
-
 }
 
 string Parser::genlabel()
 {
 	static int num = 0;
-	return ".label" + to_string(num);
+	return ".label" + to_string(num++);
 }
 
 bool Parser::program()
@@ -1462,7 +1462,8 @@ bool Parser::suitationSta(bool ischar, string flag, int &caseindex, string endla
 	}
 */
 	int value = ntoken.getType() == CONST_INT ? ntoken.getIntValue() : int(ntoken.getCharValue());
-	string thisflag = to_string(value);
+	string thisflag = genvar(value);
+	midcodes.insert({"li", thisflag, to_string(value)});
 	string caselabel = genlabel();
 	midcodes.insert({ "bnz", thisflag, "==", flag, caselabel }, caseindex++);
 
@@ -1948,7 +1949,7 @@ bool Parser::expression(bool &ischar, string &result)
 		return false;
 
 	string num1 = num2;
-	if (sign = -1)
+	if (sign == -1)
 	{
 		num2 = genvar();
 		vector<string> tmp = {"-", "0", num1, num2};
@@ -1968,7 +1969,7 @@ bool Parser::expression(bool &ischar, string &result)
 		if (!re)
 			return false;
 
-		if (sign = -1)
+		if (sign == -1)
 		{
 			string tmpnum = num2;
 			num2 = genvar();
@@ -2109,7 +2110,11 @@ bool Parser::factor(bool &ischar, string &result)
 			result.assign(num1);
 		}
 		else
+		{
+
+			result = pretoken[0].getStrValue();
 			pretoken.erase(pretoken.begin());
+		}
 		break;
 	case L_BRACK:
 		pretoken.erase(pretoken.begin());
