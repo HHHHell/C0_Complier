@@ -2,8 +2,10 @@
 #include "string"
 #include "iostream"
 #include "fstream"
+#include "map"
 
 #include "midcodes.h"
+#include "symboltable.h"
 
 using namespace std;
 
@@ -29,16 +31,15 @@ void Midcodes::insert(vector<string> strs, int index)
 		s.insert(s.end(), str);
 	}
 	vector<vector<string>>::iterator iter = clist.begin();
-	if (index == clist.size())
+	if (index >= clist.size())
 		iter = clist.end();
 	else
 	{
-		vector<string> tar = clist[index];
-		while (iter != clist.end())
+		int j = 0;
+		while (j < index)
 		{
-			if (*iter == tar)
-				break;
 			iter++;
+			j++;
 		}
 	}
 	clist.insert(iter, s);
@@ -68,4 +69,26 @@ void Midcodes::output(string filename)
 	}
 	fout.flush();
 	fout.close();
+}
+
+void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
+{
+	vector<string> mpcode;
+	mpcode.insert(mpcode.end(), ".data");
+
+	string tmp;
+
+	map<string, SymbolTable>::iterator iter = tables.find("#OverAll");
+	map<string, SymbolItem>::iterator iter2 = iter->second.symlist.begin();
+
+
+	for (; iter2 != iter->second.symlist.end(); iter2++)
+	{
+		
+	}
+
+	for (int i = 0; i < clist.size(); i++)
+	{
+		
+	}
 }

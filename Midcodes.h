@@ -13,4 +13,5 @@ public:
 	void insert(vector<string> strs);
 	void insert(vector<string> strs, int index);
 	void output(string filename);
+	void toMips(string filename, map<string, SymbolTable> &tables);
 };

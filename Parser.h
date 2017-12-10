@@ -58,14 +58,14 @@ public:
 	bool funCall();
 	bool retfunCall();
 	bool unretfunCall();
-	bool valueParas(vector<enum type> paras);
+	bool valueParas(vector<enum type> paras, int index);
 	bool returnSta();
 	bool printSta();
 	bool scanSta();
 	bool conditionSta(vector<string> &cond);
-	bool expression(bool &ischar, string& result);
-	bool item(bool &ischar, string& result);
-	bool factor(bool &iscahr, string& result);
+	bool expression(bool &ischar, string& result, int &index);
+	bool item(bool &ischar, string& result, int &index);
+	bool factor(bool &iscahr, string& result, int &index);
 	bool integer(int& value);
 };
 

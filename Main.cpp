@@ -24,7 +24,7 @@ int main(){
 	map<string, SymbolTable> tables;
 
 	SymbolTable ntable(0);	
-	tables.insert(pair<string, SymbolTable>("OverAll", ntable));
+	tables.insert(pair<string, SymbolTable>("#OverAll", ntable));
 
 	SymbolTable ttable(0);
 	tables.insert(pair<string, SymbolTable>("#StringConst", ttable));
@@ -37,5 +37,6 @@ int main(){
 		cout << "Error!" << endl;
 
 	mcodes.output("result//mcodes.txt");
+	mcodes.toMips("result//finalcode.asm", tables);
 	return 0;
 }
