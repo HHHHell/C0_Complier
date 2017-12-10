@@ -11,5 +11,6 @@ public:
 	int size();
 	void refill(string s, int index);
 	void insert(vector<string> strs);
+	void insert(vector<string> strs, int index);
 	void output(string filename);
 };

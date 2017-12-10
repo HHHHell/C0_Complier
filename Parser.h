@@ -47,9 +47,9 @@ public:
 	bool assignSta();
 	bool ifSta();
 	bool switchSta();
-	bool suitationTab(bool ischar);
-	bool suitationSta(bool ischar);
-	bool defaultSta();
+	bool suitationTab(bool ischar, string flag, int &caseindex, string endlabel);
+	bool suitationSta(bool ischar, string flag, int &caseindex, string endlabel);
+	bool defaultSta(int &caseindex, string endlabel);
 	bool whileSta();
 	bool funCall();
 	bool retfunCall();
@@ -58,10 +58,10 @@ public:
 	bool returnSta();
 	bool printSta();
 	bool scanSta();
-	bool conditionSta();
+	bool conditionSta(vector<string> &cond);
 	bool expression(bool &ischar, string& result);
-	bool item(bool &ischar, vector<string>& exp);
-	bool factor(bool &iscahr, vector<string>& exp);
+	bool item(bool &ischar, string& result);
+	bool factor(bool &iscahr, string& result);
 	bool integer();
 };
 

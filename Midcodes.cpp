@@ -17,6 +17,29 @@ void Midcodes::insert(vector<string> strs)
 	clist.insert(clist.end(), s);
 }
 
+void Midcodes::insert(vector<string> strs, int index)
+{
+	vector<string> s;
+	for (int i = 0; i < strs.size(); i++)
+	{
+		s[i].assign(strs[i]);
+	}
+	vector<vector<string>>::iterator iter = clist.begin();
+	if (index == clist.size())
+		iter = clist.end();
+	else
+	{
+		vector<string> tar = clist[index];
+		while (iter != clist.end())
+		{
+			if (*iter == tar)
+				break;
+			iter++;
+		}
+	}
+	clist.insert(iter, s);
+}
+
 void Midcodes::refill(string s, int index)
 {
 	clist[index].insert(clist[index].end(), s);
