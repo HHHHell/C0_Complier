@@ -34,4 +34,5 @@ public:
 	enum kind getkind();
 	int getoffset();
 	int getdecline();
+	string getstr();
 };

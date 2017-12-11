@@ -111,3 +111,8 @@ int SymbolItem::getdecline()
 {
 	return decline;
 }
+
+string SymbolItem::getstr()
+{
+	return str;
+}

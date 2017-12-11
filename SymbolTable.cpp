@@ -9,13 +9,13 @@ using namespace std;
 SymbolTable::SymbolTable()
 {
 	level = -1;
-	bias = 0;
+	bias = 64;
 }
 
 SymbolTable::SymbolTable(int l)
 {
 	level = l;
-	bias = 0;
+	bias = 64;
 }
 
 bool SymbolTable::isexists(string name)
@@ -43,4 +43,9 @@ int SymbolTable::alloc(int size)
 	int tmp = bias;
 	bias += size;
 	return tmp;
+}
+
+int SymbolTable::getsize()
+{
+	return bias;
 }

@@ -18,4 +18,5 @@ public:
 	void insert(SymbolItem item);
 	SymbolItem find(string name);
 	int alloc(int size);
+	int getsize();
 };

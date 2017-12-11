@@ -2,6 +2,7 @@
 
 #include "string"
 #include "vector"
+#include "SymbolTable.h"
 
 using namespace std;
 class Midcodes

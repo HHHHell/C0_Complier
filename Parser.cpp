@@ -142,7 +142,7 @@ string Parser::genvar(int value)
 string Parser::genvar(string str)
 {
 	static int strnum;
-	string name = "#string" + to_string(strnum++);
+	string name = "_string" + to_string(strnum++);
 	SymbolItem item(name, str);
 	map<string, SymbolTable>::iterator iter = tables.find("#StringConst");
 	iter->second.insert(item);
@@ -684,8 +684,6 @@ bool Parser::variableDef()
 
 bool Parser::retfunDef()
 {
-	int index = midcodes.size();
-
 	vector<enum type> paras;
 	string name;
 	enum type ttype;
@@ -695,6 +693,9 @@ bool Parser::retfunDef()
 	bool re = funDefhead(ttype, name, line);
 	if (!re)
 		return false;
+
+	midcodes.insert({ name, ":" });
+	int index = midcodes.size();
 
 	SymbolItem nitem(name, ttype, kkind, line);
 	if (isexists(nitem))
@@ -905,8 +906,6 @@ bool Parser::compoundSta()
 
 bool Parser::unretfunDef()
 {
-	int index = midcodes.size();
-
 	string name;
 	vector<enum type> paras;
 	enum type ttype = VOID_TYPE;
@@ -921,6 +920,9 @@ bool Parser::unretfunDef()
 		return false;
 	name = ntoken.getStrValue();
 	line = ntoken.getLinenum();
+
+	midcodes.insert({ name, ":" });
+	int index = midcodes.size();
 
 	SymbolItem nitem(name, ttype, kkind, line);
 	if (isexists(nitem))
@@ -1009,6 +1011,7 @@ bool Parser::unretfunDef()
 
 bool Parser::mainFun()
 {
+	midcodes.insert({ "main", ":" });
 	vector<string> tmp = { "func", "void", "main" , "0"};
 	midcodes.insert(tmp);
 
@@ -1824,7 +1827,7 @@ bool Parser::scanSta()
 	if (ntoken.getType() != IDENTITY)
 		return false;
 
-	midcodes.insert({"SCAN", ntoken.getStrValue()});
+	midcodes.insert({"scan", ntoken.getStrValue()});
 
 	ntoken = gettoken(1);
 	while (ntoken.getType() == COMMA)
@@ -1833,7 +1836,7 @@ bool Parser::scanSta()
 		ntoken = gettoken();		
 		if (ntoken.getType() != IDENTITY)
 			return false;
-		midcodes.insert({ "SCAN", ntoken.getStrValue() });
+		midcodes.insert({ "scan", ntoken.getStrValue() });
 
 		ntoken = gettoken(1);
 	}
