@@ -2100,7 +2100,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 				return false;
 
 			string num1 = genvar();
-			tmp = { "=", "RET", num1};
+			tmp = { "=", "ret", num1};
 			if (index != -1)
 				midcodes.insert(tmp, index++);
 			else
