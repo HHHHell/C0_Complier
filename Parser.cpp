@@ -483,7 +483,6 @@ bool Parser::constDef()
 	else
 	{
 		ttype = CHAR_TYPE;
-		size = 2;
 
 		ntoken = gettoken();
 		if (ntoken.getType() != IDENTITY)
@@ -816,18 +815,17 @@ bool Parser::parameters(vector<enum type> &paras)
 	enum type ttype;
 	enum kind kkind = PARAMETERS;
 
+	size = 4;
 	Token ntoken = gettoken();
 	if (ntoken.getType() != INT && ntoken.getType() != CHAR)
 		return false;
 	if (ntoken.getType() == INT)
 	{
 		ttype = INT_TYPE;
-		size = 4;
 	}
 	else
 	{
 		ttype = CHAR_TYPE;
-		size = 2;
 	}
 	paras.insert(paras.end(), ttype);
 
@@ -1440,6 +1438,10 @@ bool Parser::switchSta()
 		if (!re)
 			return false;
 	}
+	else
+	{
+		midcodes.insert({ "goto", endlabel }, caseindex++);
+	}
 	ntoken = gettoken();
 	if (ntoken.getType() != R_CURLY)
 		return false;
@@ -1472,20 +1474,13 @@ bool Parser::suitationSta(bool ischar, string flag, int &caseindex, string endla
 	if (ntoken.getType() != CASE)
 		return false;
 	
-
 	ntoken = gettoken();
 	if (ntoken.getType() != CONST_INT  && ntoken.getType() != CONST_CHAR)
 		return false;
-/*	if ((ischar && ntoken.getType() == CONST_INT) ||
-		(!ischar && ntoken.getType() == CONST_CHAR))
-	{
-		cout << "Error_3" << endl;
-		return false;
-	}
-*/
+
 	int value = ntoken.getType() == CONST_INT ? ntoken.getIntValue() : int(ntoken.getCharValue());
 	string thisflag = genvar(value);
-	midcodes.insert({"li", thisflag, to_string(value)});
+	midcodes.insert({"li", thisflag, to_string(value)}, caseindex++);
 	string caselabel = genlabel();
 	midcodes.insert({ "bnz", thisflag, "==", flag, caselabel }, caseindex++);
 
@@ -1526,6 +1521,7 @@ bool Parser::defaultSta(int &caseindex, string endlabel)
 		ntoken = lex.nextsymbol();
 		pretoken.insert(pretoken.begin(), ntoken);
 	}
+	midcodes.insert({ defaultlabel, ":" });
 	bool re = statement();
 	if (!re)
 		return false;
@@ -1545,6 +1541,8 @@ bool Parser::whileSta()
 	ntoken = gettoken();
 	if (ntoken.getType() != L_BRACK)
 		return false;
+	
+	int whileindex = midcodes.size();
 
 	if (pretoken.size() == 0)
 	{
@@ -1558,7 +1556,7 @@ bool Parser::whileSta()
 
 	string whilebegin = genlabel(), loop = genlabel(), endloop = genlabel();
 
-	midcodes.insert({ whilebegin, ":" });
+	midcodes.insert({ whilebegin, ":" }, whileindex);
 
 	vector<string> tmp = { "bnz" };
 	for (int i = 0; i < cond.size(); i++)
@@ -2180,9 +2178,14 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 			return false;
 		break;
 	case CONST_CHAR:
+		value = int(ntoken.getCharValue());
 		result = genvar(value);
-		tmp = { "li", result, to_string(int(ntoken.getCharValue())) };
 		ischar = true;
+		tmp = { "li", result, to_string(int(ntoken.getCharValue())) };
+		if (index != -1)
+			midcodes.insert(tmp, index++);
+		else
+			midcodes.insert(tmp);
 		pretoken.erase(pretoken.begin()); 
 		break;
 	default:

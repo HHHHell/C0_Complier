@@ -15,7 +15,7 @@ SymbolItem Midcodes::find(string name, string nkey)
 	map<string, SymbolTable>::iterator iter = tables.find(nkey);
 	if (iter == tables.end())
 	{
-		cout << "Not Found: " + name + " in Table:" + nkey << endl;
+//		cout << "Not Found: " + name + " in Table:" + nkey << endl;
 		return SymbolItem();
 	}
 	SymbolTable *ntable = &(iter->second);
@@ -33,7 +33,7 @@ SymbolItem Midcodes::find(string name, string nkey)
 			SymbolItem item = ttable.find(name);
 			return item;
 		}
-		cout << "Not Found: " + name + " in Table:" + nkey << endl;
+//		cout << "Not Found: " + name + " in Table:" + nkey << endl;
 		return SymbolItem();
 	}
 	else
@@ -43,7 +43,7 @@ SymbolItem Midcodes::find(string name, string nkey)
 			SymbolItem item = ntable->find(name);
 			return item;
 		}
-		cout << "Not Found: " + name + " in Table:" + nkey << endl;
+//		cout << "Not Found: " + name + " in Table:" + nkey << endl;
 		return SymbolItem();
 	}
 }
@@ -346,7 +346,7 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		{
 			SymbolItem item = find(line[1], nkey);
 			tmp = "lw " + string("$v0,") + to_string(item.getoffset()*-1) + "($fp)";
-
+			mpcode.insert(mpcode.end(), tmp);
 			mpcode.insert(mpcode.end(), "lw $ra,0($fp)");
 			mpcode.insert(mpcode.end(), "lw $sp,4($fp)");
 			mpcode.insert(mpcode.end(), "lw $fp,8($fp)");
@@ -356,7 +356,7 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		{
 			map<string, SymbolTable>::iterator iter1 = tables.find(line[1]);
 			ntable = &(iter1->second);
-			nkey = line[1];
+			string fname = line[1];
 
 			mpcode.insert(mpcode.end(), "sw $sp,4($sp)");
 			mpcode.insert(mpcode.end(), "sw $fp,8($sp)");
@@ -365,14 +365,14 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 			{
 				line = clist[++i];
 				SymbolItem item = find(line[1], nkey);
-				tmp = "lw " + string("$s1,") + to_string(item.getoffset()) + "($fp)";
+				tmp = "lw " + string("$s1,") + to_string(item.getoffset()*-1) + "($fp)";
 				mpcode.insert(mpcode.end(), tmp);
 				mpcode.insert(mpcode.end(), "sw $s1," + to_string(12 + 4 * j) + "($sp)");
 			}
 			mpcode.insert(mpcode.end(), "move $fp,$sp");
 			mpcode.insert(mpcode.end(), "li $s1," + to_string(ntable->getsize()));
 			mpcode.insert(mpcode.end(), "sub $sp,$sp,$s1");
-			mpcode.insert(mpcode.end(), "jal " + nkey);
+			mpcode.insert(mpcode.end(), "jal " + fname);
 		}
 		else if (line[0] == "li")
 		{
