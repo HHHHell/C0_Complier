@@ -46,7 +46,7 @@ SymbolItem::SymbolItem(string n, enum type t, enum kind k, int d, int off, int v
 	str = "";
 }
 
-SymbolItem::SymbolItem(string n, string strvalue) : ttype(NOTYPE), kkind(NOKIND)
+SymbolItem::SymbolItem(string n, string strvalue) : ttype(NOTYPE), kkind(CONST_VAR)
 {
 	name.assign(n);
 	decline = -1;
@@ -111,7 +111,10 @@ int SymbolItem::getdecline()
 {
 	return decline;
 }
-
+int SymbolItem::getvalue()
+{
+	return value;
+}
 string SymbolItem::getstr()
 {
 	return str;

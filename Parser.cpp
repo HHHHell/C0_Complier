@@ -18,6 +18,7 @@ string type2string(enum type ttype)
 Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 	: lex(l), tables(tlist), midcodes(m), result(false)
 {
+	varnum = 1;
 	ntable = &(tables.find("#OverAll")->second);
 	nkey = "#OverAll";
 	pout.open("result\\parser_result.txt");
@@ -92,7 +93,7 @@ bool Parser::isexists(string name)
 	}
 }
 
-SymbolItem Parser::find(string name)
+SymbolItem Parser::pfind(string name)
 {
 	if (nkey != "#OverAll")
 	{
@@ -141,17 +142,28 @@ string Parser::genvar(int value)
 
 string Parser::genvar(string str)
 {
-	static int strnum;
+	static int strnum = 1;
+	map<string, SymbolTable>::iterator iter = tables.find("#StringConst");
+	
+	map<string, SymbolItem>::iterator iter2 = iter->second.symlist.begin();
+	while (iter2 != iter->second.symlist.end() && iter2->second.getstr() != str)
+	{
+		iter2++;
+	}
+	if (iter2 != iter->second.symlist.end())
+	{
+		return iter2->first;
+	}
+
 	string name = "_string" + to_string(strnum++);
 	SymbolItem item(name, str);
-	map<string, SymbolTable>::iterator iter = tables.find("#StringConst");
 	iter->second.insert(item);
 	return name;
 }
 
 string Parser::genlabel()
 {
-	static int num = 0;
+	static int num = 1;
 	return ".label" + to_string(num++);
 }
 
@@ -192,7 +204,7 @@ bool Parser::program()
 			while (ntoken.getType() == VOID || ntoken.getType() == INT ||
 				ntoken.getType() == CHAR)
 			{
-				if (ntoken.getType() == VOID)
+				if (pretoken[0].getType() == VOID)
 				{
 					if (pretoken.size() == 1)
 					{
@@ -1167,7 +1179,7 @@ bool Parser::statement()
 			ntoken = pretoken[1];
 		if (ntoken.getType() == SEMICOLON || ntoken.getType() == L_BRACK)
 		{
-			SymbolItem item = find(name);
+			SymbolItem item = pfind(name);
 			if (item.getkind() != FUNCTION)
 			{
 				cout << "Error_3" << endl;
@@ -1256,7 +1268,7 @@ bool Parser::assignSta()
 		cout << "Error_3" << endl;
 		return false;
 	}
-	SymbolItem item = find(name);
+	SymbolItem item = pfind(name);
 	enum type ttype = item.gettype();
 
 	string index;
@@ -1585,7 +1597,7 @@ bool Parser::retfunCall()
 	if (ntoken.getType() != IDENTITY)
 		return false;
 	string name = ntoken.getStrValue();
-	SymbolItem item = find(name);
+	SymbolItem item = pfind(name);
 	vector<enum type> paras = item.getparas();
 
 	int index = midcodes.size();
@@ -1624,7 +1636,7 @@ bool Parser::unretfunCall()
 	if (ntoken.getType() != IDENTITY)
 		return false;
 	string name = ntoken.getStrValue();
-	SymbolItem item = find(name);
+	SymbolItem item = pfind(name);
 	vector<enum type> paras = item.getparas();
 
 	int index = midcodes.size();
@@ -2044,7 +2056,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 
 			Token stoken = pretoken[0];
 			string name = stoken.getStrValue();
-			SymbolItem item = find(name);
+			SymbolItem item = pfind(name);
 			if (item.getkind() != VAR_LIST ||
 				(item.gettype() != INT_TYPE && item.gettype() != CHAR_TYPE))
 			{
@@ -2084,7 +2096,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 		{
 			Token stoken = pretoken[0];
 			string name = stoken.getStrValue();
-			SymbolItem item = find(name);
+			SymbolItem item = pfind(name);
 			if (item.getkind() != FUNCTION || item.gettype() == VOID_TYPE)
 			{
 				cout << "Error_3" << endl;
@@ -2109,9 +2121,37 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 		}
 		else
 		{
+			string name = pretoken[0].getStrValue();
+			SymbolItem item = pfind(name);
+			if (item.getkind() != FUNCTION)
+			{
+				result = pretoken[0].getStrValue();
+				pretoken.erase(pretoken.begin());
+			}
+			else
+			{
+				if (item.gettype() == VOID_TYPE)
+				{
+					cout << "Error_3" << endl;
+					return false;
+				}
+				else if (item.gettype() == INT_TYPE)
+					ischar = false;
+				else
+					ischar = true;
 
-			result = pretoken[0].getStrValue();
-			pretoken.erase(pretoken.begin());
+				re = retfunCall();
+				if (!re)
+					return false;
+
+				string num1 = genvar();
+				tmp = { "=", "ret", num1 };
+				if (index != -1)
+					midcodes.insert(tmp, index++);
+				else
+					midcodes.insert(tmp);
+				result.assign(num1);
+			}
 		}
 		break;
 	case L_BRACK:

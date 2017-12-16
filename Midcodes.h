@@ -7,8 +7,11 @@
 using namespace std;
 class Midcodes
 {
+	map<string, SymbolTable> &tables;
 	vector<vector<string>> clist;
 public:
+	Midcodes(map<string, SymbolTable> &t);
+	SymbolItem find(string name, string nkey);
 	int size();
 	void refill(string s, int index);
 	void insert(vector<string> strs);

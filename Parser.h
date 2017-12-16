@@ -19,13 +19,13 @@ private:
 	string nkey;
 	ofstream pout;
 
-	int varnum = 0;
+	int varnum;
 
 	Token gettoken(int mode);
 	void printresult(std::string str);
 	bool isexists(SymbolItem item);
 	bool isexists(string name);
-	SymbolItem find(string name);
+	SymbolItem pfind(string name);
 	string genvar();
 	string genvar(int value);
 	string genvar(string str);

@@ -20,8 +20,8 @@ int main(){
 		cout << "Cann't open file: " << filename << endl;
 		return 0;
 	}
-	Midcodes mcodes;
 	map<string, SymbolTable> tables;
+	Midcodes mcodes(tables);
 
 	SymbolTable ntable(0);	
 	tables.insert(pair<string, SymbolTable>("#OverAll", ntable));
