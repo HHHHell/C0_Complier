@@ -28,6 +28,8 @@ private:
 	SymbolItem pfind(string name);
 	string genvar();
 	string genvar(int value);
+	string genvar(enum type t);
+	string genvar(int value, enum type t);
 	string genvar(string str);
 	string genlabel();
 public:

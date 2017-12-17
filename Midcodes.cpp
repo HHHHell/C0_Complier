@@ -121,7 +121,7 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 	string tmp;
 
 	mpcode.insert(mpcode.end(), ".data");
-	mpcode.insert(mpcode.end(), ".space  " + to_string(ntable->getsize() * 4));
+	mpcode.insert(mpcode.end(), ".space  " + to_string(ntable->getsize()));
 
 	giter = tables.find("#StringConst");
 	iter = giter->second.symlist.begin();
@@ -156,12 +156,19 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		mpcode.insert(mpcode.end(), tmp);
 	}
 
+	nkey = "main";
+	giter = tables.find(nkey);
+	ntable = &(giter->second);
+	mpcode.insert(mpcode.end(), "move $fp,$sp");
+	mpcode.insert(mpcode.end(), "li $s1," + to_string(ntable->getsize()));
+	mpcode.insert(mpcode.end(), "sub $sp,$sp,$s1");
+
 	mpcode.insert(mpcode.end(), "j main");
 
 	for (int i = 0; i < clist.size(); i++)
 	{
 		vector<string> line = clist[i];
-		if (line[1] == ":" || line[0][0] == '.')
+		if (line[0][0] == '.'||(line.size() > 1 && line[1] == ":" ))
 		{
 			mpcode.insert(mpcode.end(), " ");
 			tmp = "";
@@ -337,19 +344,27 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 			{
 				line = clist[++i];
 				SymbolItem item = find(line[2], nkey);
-				tmp = "lw " + string("$s1,") + to_string(12 + 4 * j) + "($fp)";
+				tmp = "lw " + string("$s1,") + to_string((12 + 4 * j)*-1) + "($fp)";
 				mpcode.insert(mpcode.end(), tmp);
 				mpcode.insert(mpcode.end(), "sw $s1," + to_string(item.getoffset()*-1) + "($fp)");
 			}
 		}
 		else if (line[0] == "ret")
 		{
+			if (line.size() == 1)
+			{
+				mpcode.insert(mpcode.end(), "lw $ra,0($fp)");
+				mpcode.insert(mpcode.end(), "lw $sp,-4($fp)");
+				mpcode.insert(mpcode.end(), "lw $fp,-8($fp)");
+				mpcode.insert(mpcode.end(), "jr $ra");
+				continue;
+			}
 			SymbolItem item = find(line[1], nkey);
 			tmp = "lw " + string("$v0,") + to_string(item.getoffset()*-1) + "($fp)";
 			mpcode.insert(mpcode.end(), tmp);
 			mpcode.insert(mpcode.end(), "lw $ra,0($fp)");
-			mpcode.insert(mpcode.end(), "lw $sp,4($fp)");
-			mpcode.insert(mpcode.end(), "lw $fp,8($fp)");
+			mpcode.insert(mpcode.end(), "lw $sp,-4($fp)");
+			mpcode.insert(mpcode.end(), "lw $fp,-8($fp)");
 			mpcode.insert(mpcode.end(), "jr $ra");
 		}
 		else if (line[0] == "call")
@@ -358,8 +373,8 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 			ntable = &(iter1->second);
 			string fname = line[1];
 
-			mpcode.insert(mpcode.end(), "sw $sp,4($sp)");
-			mpcode.insert(mpcode.end(), "sw $fp,8($sp)");
+			mpcode.insert(mpcode.end(), "sw $sp,-4($sp)");
+			mpcode.insert(mpcode.end(), "sw $fp,-8($sp)");
 			int num = atoi(line[2].c_str());
 			for (int j = 0; j < num; j++)
 			{
@@ -367,7 +382,7 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 				SymbolItem item = find(line[1], nkey);
 				tmp = "lw " + string("$s1,") + to_string(item.getoffset()*-1) + "($fp)";
 				mpcode.insert(mpcode.end(), tmp);
-				mpcode.insert(mpcode.end(), "sw $s1," + to_string(12 + 4 * j) + "($sp)");
+				mpcode.insert(mpcode.end(), "sw $s1," + to_string((12 + 4 * j) * -1) + "($sp)");
 			}
 			mpcode.insert(mpcode.end(), "move $fp,$sp");
 			mpcode.insert(mpcode.end(), "li $s1," + to_string(ntable->getsize()));
@@ -384,8 +399,8 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		else if (line[0] == "scan")
 		{
 			SymbolItem item1 = find(line[1], nkey);
-
-			mpcode.insert(mpcode.end(), "li $v0,5");
+			int flag = item1.gettype() == INT_TYPE ? 5 : 12;
+			mpcode.insert(mpcode.end(), "li $v0," + to_string(flag));
 			mpcode.insert(mpcode.end(), "syscall");
 			tmp = "sw " + string("$v0,") + to_string(item1.getoffset()*-1) + "($fp)";
 			mpcode.insert(mpcode.end(), tmp);
@@ -402,10 +417,9 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 			}
 			else if (item1.gettype() == CHAR_TYPE)
 			{
-				tmp = "li " + string("$a0,") + to_string(item1.getoffset()*-1);
+				tmp = "lw " + string("$a0,") + to_string(item1.getoffset()*-1) + "($fp)";
 				mpcode.insert(mpcode.end(), tmp);
-				mpcode.insert(mpcode.end(), "add $a0,$fp,$a0");
-				mpcode.insert(mpcode.end(), "li $v0,4");
+				mpcode.insert(mpcode.end(), "li $v0,11");
 				mpcode.insert(mpcode.end(), "syscall");
 			}
 			else

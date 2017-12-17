@@ -140,6 +140,24 @@ string Parser::genvar(int value)
 	return name;
 }
 
+string Parser::genvar(enum type t)
+{
+	string name = "#var" + to_string(varnum++);
+	int off = ntable->alloc(4);
+	SymbolItem item(name, t, VARIABLE, -1, off);
+	ntable->insert(item);
+	return name;
+}
+
+string Parser::genvar(int value, enum type t)
+{
+	string name = "#var" + to_string(varnum++);
+	int off = ntable->alloc(4);
+	SymbolItem item(name, t, VARIABLE, value, off);
+	ntable->insert(item);
+	return name;
+}
+
 string Parser::genvar(string str)
 {
 	static int strnum = 1;
@@ -192,7 +210,7 @@ bool Parser::program()
 		ntoken = lex.nextsymbol();
 		pretoken.insert(pretoken.end(), ntoken);
 		enum symbol type = ntoken.getType();
-		if (type == L_BRACK)
+		if (type == L_BRACK || type == L_CURLY)
 		{
 			bool re = retfunDef();
 			if (!re)
@@ -201,8 +219,8 @@ bool Parser::program()
 			if (ntoken.getType() != VOID && ntoken.getType() != INT &&
 				ntoken.getType() != CHAR)
 				return false;
-			while (ntoken.getType() == VOID || ntoken.getType() == INT ||
-				ntoken.getType() == CHAR)
+			while (pretoken[0].getType() == VOID || pretoken[0].getType() == INT ||
+				pretoken[0].getType() == CHAR)
 			{
 				if (pretoken[0].getType() == VOID)
 				{
@@ -1009,6 +1027,7 @@ bool Parser::unretfunDef()
 	}
 	else
 		return false;
+	midcodes.insert({ "ret" });
 	printresult("This is a Unreturned Function Define!");
 
 	iter = tables.find("#OverAll");
@@ -1298,12 +1317,7 @@ bool Parser::assignSta()
 	bool re = expression(ischar, result, minusone);
 	if (!re)
 		return false;
-/*	if (ttype == CHAR_TYPE && !ischar)
-	{
-		cout << "Error_3" << endl;
-		return false;
-	}
-*/
+
 	if (islist)
 	{
 		vector<string> tmp = { "[]=", name, index, result };
@@ -1752,6 +1766,10 @@ bool Parser::returnSta()
 		if (ntoken.getType() != R_BRACK)
 			return false;
 	}
+	else
+	{
+		midcodes.insert({ "ret" });
+	}
 
 	if (pretoken.size() == 0)
 	{
@@ -2128,21 +2146,27 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 			}
 			else
 			{
+				enum type t;
 				if (item.gettype() == VOID_TYPE)
 				{
 					cout << "Error_3" << endl;
 					return false;
 				}
-				else if (item.gettype() == INT_TYPE)
+				else if (item.gettype() == INT_TYPE) 
+				{
+					t = INT_TYPE;
 					ischar = false;
+				}
 				else
+				{
+					t = CHAR_TYPE;
 					ischar = true;
-
+				}
 				re = retfunCall();
 				if (!re)
 					return false;
 
-				string num1 = genvar();
+				string num1 = genvar(t);
 				tmp = { "=", "ret", num1 };
 				if (index != -1)
 					midcodes.insert(tmp, index++);
@@ -2179,7 +2203,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 		break;
 	case CONST_CHAR:
 		value = int(ntoken.getCharValue());
-		result = genvar(value);
+		result = genvar(value, CHAR_TYPE);
 		ischar = true;
 		tmp = { "li", result, to_string(int(ntoken.getCharValue())) };
 		if (index != -1)
