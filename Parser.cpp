@@ -855,11 +855,6 @@ bool Parser::parameters(vector<enum type> &paras)
 	line = ntoken.getLinenum();
 	offset = ntable->alloc(size);
 	SymbolItem nitem(name, ttype, kkind, line, offset);
-	if (isexists(nitem))
-	{
-		cout << "Error_3" << endl;
-		return false;
-	}
 	ntable->insert(nitem);
 
 	vector<string> tmp = { "para",type2string(ttype), name };

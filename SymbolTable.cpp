@@ -47,5 +47,5 @@ int SymbolTable::alloc(int size)
 
 int SymbolTable::getsize()
 {
-	return bias;
+	return bias + 16;
 }
