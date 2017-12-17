@@ -34,8 +34,10 @@ int main(){
 	bool re = parser.program();
 	parser.result = re;
 	if (!re)
+	{
 		cout << "Error!" << endl;
-
+		return 0;
+	}
 	mcodes.output("result//mcodes.txt");
 	mcodes.toMips("result//finalcode.asm", tables);
 	return 0;

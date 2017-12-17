@@ -10,12 +10,126 @@
 using namespace std;
 Midcodes::Midcodes(map<string, SymbolTable> &t):tables(t) {}
 
+void Midcodes::loadword(string name, string nkey, string tar, string index)
+{
+	string base = "0x7fffeffc";
+	map<string, SymbolTable>::iterator iter = tables.find(nkey);
+	if (iter == tables.end())
+	{
+		cout << "error" << endl;
+		return;
+	}
+	SymbolTable *ntable = &(iter->second);
+	SymbolItem item = ntable->find(name);
+	if (item.gettype() != NOTYPE)
+	{
+		if (index == "")
+		{
+			string tmp = "lw " + tar + "," + to_string(item.getoffset()*-1) + "($fp)";
+			mpcode.insert(mpcode.end(), tmp);
+		}
+		else
+		{
+			mpcode.insert(mpcode.end(), "sll " + index + "," + index + ",2");
+			string tmp = "li $t1," + to_string(item.getoffset());
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "add $t1," + index + ",$t1";
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "sub $t1,$fp,$t1";
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "lw " + tar + ",0($t1)";
+			mpcode.insert(mpcode.end(), tmp);
+		}
+	}
+	else
+	{
+		iter = tables.find("#OverAll");
+		ntable = &(iter->second);
+		item = ntable->find(name);
+		if (index == "")
+		{
+			string tmp = "li $t1," + base;
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "lw " + tar + "," + to_string(item.getoffset()*-1) + "($t1)";
+			mpcode.insert(mpcode.end(), tmp);
+		}
+		else
+		{
+			string tmp = "li $t2," + base;
+			mpcode.insert(mpcode.end(), tmp);
+			mpcode.insert(mpcode.end(), "sll " + index + "," + index + ",2");
+			tmp = "li $t1," + to_string(item.getoffset());
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "add $t1," + index + ",$t1";
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "sub $t1,$t2,$t1";
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "lw " + tar + ",0($t1)";
+			mpcode.insert(mpcode.end(), tmp);
+		}
+	}
+}
+
+void Midcodes::saveword(string name, string nkey, string src, string index)
+{
+	string base = "0x7fffeffc";
+	map<string, SymbolTable>::iterator iter = tables.find(nkey);
+	if (iter == tables.end())
+	{
+		cout << "error" << endl;
+		return;
+	}
+	SymbolTable *ntable = &(iter->second);
+	SymbolItem item = ntable->find(name);
+	if (item.gettype() != NOTYPE)
+	{
+		if (index == "")
+		{
+			string tmp = "sw " + src + "," + to_string(item.getoffset()*-1) + "($fp)";
+			mpcode.insert(mpcode.end(), tmp);
+		}
+		else
+		{
+			string tmp = "sll " + index + "," + index + ",2";
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "sub " + index + ",$fp," + index;
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "sw " + src + "," + to_string(item.getoffset()*-1) + "(" + index + ")";
+			mpcode.insert(mpcode.end(), tmp);
+		}
+	}
+	else
+	{
+		iter = tables.find("#OverAll");
+		ntable = &(iter->second);
+		item = ntable->find(name);
+		if (index == "")
+		{
+			string tmp = "li $t1," + base;
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "sw " + src + "," + to_string(item.getoffset()*-1) + "($t1)";
+			mpcode.insert(mpcode.end(), tmp);
+		}
+		else
+		{
+			string tmp = "sll " + index + "," + index + ",2";
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "li $t1," + base;
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "sub " + index + ",$t1," + index;
+			mpcode.insert(mpcode.end(), tmp);
+			tmp = "sw " + src + "," + to_string(item.getoffset()*-1) + "(" + index + ")";
+			mpcode.insert(mpcode.end(), tmp);
+		}
+	}
+}
+
+
 SymbolItem Midcodes::find(string name, string nkey)
 {
 	map<string, SymbolTable>::iterator iter = tables.find(nkey);
 	if (iter == tables.end())
 	{
-//		cout << "Not Found: " + name + " in Table:" + nkey << endl;
 		return SymbolItem();
 	}
 	SymbolTable *ntable = &(iter->second);
@@ -33,7 +147,6 @@ SymbolItem Midcodes::find(string name, string nkey)
 			SymbolItem item = ttable.find(name);
 			return item;
 		}
-//		cout << "Not Found: " + name + " in Table:" + nkey << endl;
 		return SymbolItem();
 	}
 	else
@@ -43,7 +156,6 @@ SymbolItem Midcodes::find(string name, string nkey)
 			SymbolItem item = ntable->find(name);
 			return item;
 		}
-//		cout << "Not Found: " + name + " in Table:" + nkey << endl;
 		return SymbolItem();
 	}
 }
@@ -112,31 +224,30 @@ void Midcodes::output(string filename)
 
 void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 {
-	vector<string> mpcode;
-	map<string, SymbolTable>::iterator giter = tables.find("#OverAll");
-	SymbolTable* ntable = &(giter->second);
-	string nkey = "#OverAll";
-	map<string, SymbolItem>::iterator iter = giter->second.symlist.begin();
-
 	string tmp;
+	string nkey = "#OverAll";
+	map<string, SymbolTable>::iterator giter = tables.find(nkey);
+	SymbolTable* ntable = &(giter->second);
+	map<string, SymbolItem>::iterator iter = giter->second.symlist.begin();
 
 	mpcode.insert(mpcode.end(), ".data");
 	mpcode.insert(mpcode.end(), ".space  " + to_string(ntable->getsize()));
 
-	giter = tables.find("#StringConst");
+	nkey = "#StringConst";
+	giter = tables.find(nkey);
 	iter = giter->second.symlist.begin();
 	ntable = &(giter->second);
-	nkey = "#StringConst";
 
+	mpcode.insert(mpcode.end(), "");
 	for (; iter != giter->second.symlist.end(); iter++)
 	{
 		tmp = iter->second.getname() + ": .asciiz " + iter->second.getstr();
 		mpcode.insert(mpcode.end(), tmp);
 	}
 
-	giter = tables.find("#OverAll");
-	ntable = &(giter->second);
 	nkey = "#OverAll";
+	giter = tables.find(nkey);
+	ntable = &(giter->second);
 
 	mpcode.insert(mpcode.end(), " ");
 	mpcode.insert(mpcode.end(), ".text");
@@ -187,109 +298,77 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		{
 			if (line[1] == "ret")
 			{
-				SymbolItem item2 = find(line[2], nkey);
-				tmp = "sw " + string("$v0,") + to_string(item2.getoffset()*-1) + "($fp)";
-				mpcode.insert(mpcode.end(), tmp);
+				saveword(line[2], nkey, "$v0");
 				continue;
 			}
-
-			SymbolItem item1 = find(line[1], nkey);
-			SymbolItem item2 = find(line[2], nkey);
-
-			string tmp1 = "lw " + string("$s1,") + to_string(item1.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp1);
-			string tmp4 = "sw " + string("$s1,") + to_string(item2.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp4);
+			loadword(line[1], nkey, "$s1");
+			saveword(line[2], nkey, "$s1");
 		}
 		else if (line[0] == "[]=")
 		{
-			SymbolItem item1 = find(line[1], nkey);
-			SymbolItem item2 = find(line[2], nkey);
-			SymbolItem item3 = find(line[3], nkey);
+			loadword(line[3], nkey, "$s3");
+			loadword(line[2], nkey, "$s2");
 
-			tmp = "lw " + string("$s3,") + to_string(item3.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "lw " + string("$s2,") + to_string(item2.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "sll $s2,$s2,2";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "sub $s2,$fp,$s2";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "sw $s3," + to_string(item1.getoffset()*-1) + "($s2)";
-			mpcode.insert(mpcode.end(), tmp);
+			saveword(line[1], nkey, "$s3", "$s2");
 		}
 		else if (line[0] == "[]")
 		{
-			SymbolItem item1 = find(line[1], nkey);
-			SymbolItem item2 = find(line[2], nkey);
-			SymbolItem item3 = find(line[3], nkey);
+			loadword(line[2], nkey, "$s2");
+			loadword(line[1], nkey, "$s3", "$s2");
 
-			tmp = "li " + string("$s1,") + to_string(item1.getoffset());
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "lw " + string("$s2,") + to_string(item2.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
-			mpcode.insert(mpcode.end(), "sll $s2,$s2,2");
-			tmp = "add $s1,$s2,$s1";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "sub $s1,$fp,$s1";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "lw $s3,($s1)";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "sw $s3," + to_string(item3.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
+			saveword(line[3], nkey, "$s3");
 		}
 		else if (line[0] == "+" || line[0] == "-" || line[0] == "/" || line[0] == "*")
 		{
-			SymbolItem item1 = find(line[1], nkey);
-			SymbolItem item2 = find(line[2], nkey);
-			SymbolItem item3 = find(line[3], nkey);
-
-			tmp = "lw " + string("$s1,") + to_string(item1.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "lw " + string("$s2,") + to_string(item2.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
+			if (line[1] == "0")
+			{
+				mpcode.insert(mpcode.end(), "move $s1,$zero");
+			}
+			else
+			{
+				loadword(line[1], nkey, "$s1");
+			}
+			if (line[2] == "0")
+			{
+				mpcode.insert(mpcode.end(), "move $s2,$zero");
+			}
+			else
+			{
+				loadword(line[2], nkey, "$s2");
+			}
 
 			switch (line[0][0])
 			{
 			case '+':
 				tmp.assign("add $s2,$s1,$s2");
 				mpcode.insert(mpcode.end(), tmp);
-				tmp.assign("sw " + string("$s2,") + to_string(item3.getoffset()*-1) + "($fp)");
-				mpcode.insert(mpcode.end(), tmp);
+				saveword(line[3], nkey, "$s2");
 				break;
 			case '-':
 				tmp.assign("sub $s2,$s1,$s2");
 				mpcode.insert(mpcode.end(), tmp);
-				tmp.assign("sw " + string("$s2,") + to_string(item3.getoffset()*-1) + "($fp)");
-				mpcode.insert(mpcode.end(), tmp);
+				saveword(line[3], nkey, "$s2");
 				break;
 			case '*':
 				tmp.assign("mult $s1,$s2");
 				mpcode.insert(mpcode.end(), tmp);
 				tmp.assign("mflo $s2");
 				mpcode.insert(mpcode.end(), tmp);
-				tmp.assign("sw " + string("$s2,") + to_string(item3.getoffset()*-1) + "($fp)");
-				mpcode.insert(mpcode.end(), tmp);
+				saveword(line[3], nkey, "$s2");
 				break;
 			case '/':
 				tmp.assign("div $s1,$s2");
 				mpcode.insert(mpcode.end(), tmp);
 				tmp.assign("mflo $s2");
 				mpcode.insert(mpcode.end(), tmp);
-				tmp.assign("sw " + string("$s2,") + to_string(item3.getoffset()*-1) + "($fp)");
-				mpcode.insert(mpcode.end(), tmp);
+				saveword(line[3], nkey, "$s2");
 				break;
 			}
 		}
 		else if (line[0] == "bnz")
 		{
-			SymbolItem item1 = find(line[1], nkey);
-			SymbolItem item2 = find(line[3], nkey);
-
-			tmp = "lw " + string("$s1,") + to_string(item1.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
-			tmp = "lw " + string("$s2,") + to_string(item2.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
+			loadword(line[1], nkey, "$s1");
+			loadword(line[3], nkey, "$s2");
 
 			if (line[2] == "==")
 			{
@@ -359,9 +438,7 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 				mpcode.insert(mpcode.end(), "jr $ra");
 				continue;
 			}
-			SymbolItem item = find(line[1], nkey);
-			tmp = "lw " + string("$v0,") + to_string(item.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
+			loadword(line[1], nkey, "$v0");
 			mpcode.insert(mpcode.end(), "lw $ra,0($fp)");
 			mpcode.insert(mpcode.end(), "lw $sp,-4($fp)");
 			mpcode.insert(mpcode.end(), "lw $fp,-8($fp)");
@@ -379,9 +456,7 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 			for (int j = 0; j < num; j++)
 			{
 				line = clist[++i];
-				SymbolItem item = find(line[1], nkey);
-				tmp = "lw " + string("$s1,") + to_string(item.getoffset()*-1) + "($fp)";
-				mpcode.insert(mpcode.end(), tmp);
+				loadword(line[1], nkey, "$s1");
 				mpcode.insert(mpcode.end(), "sw $s1," + to_string((12 + 4 * j) * -1) + "($sp)");
 			}
 			mpcode.insert(mpcode.end(), "move $fp,$sp");
@@ -391,10 +466,8 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		}
 		else if (line[0] == "li")
 		{
-			SymbolItem item1 = find(line[1], nkey);
 			mpcode.insert(mpcode.end(), "li $s1," + line[2]);
-			tmp = "sw " + string("$s1,") + to_string(item1.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
+			saveword(line[1], nkey, "$s1");
 		}
 		else if (line[0] == "scan")
 		{
@@ -402,23 +475,20 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 			int flag = item1.gettype() == INT_TYPE ? 5 : 12;
 			mpcode.insert(mpcode.end(), "li $v0," + to_string(flag));
 			mpcode.insert(mpcode.end(), "syscall");
-			tmp = "sw " + string("$v0,") + to_string(item1.getoffset()*-1) + "($fp)";
-			mpcode.insert(mpcode.end(), tmp);
+			saveword(line[1], nkey, "$v0");
 		}
 		else if (line[0] == "print")
 		{
 			SymbolItem item1 = find(line[1], nkey);
 			if (item1.gettype() == INT_TYPE)
 			{
-				tmp = "lw " + string("$a0,") + to_string(item1.getoffset()*-1) + "($fp)";
-				mpcode.insert(mpcode.end(), tmp);
+				loadword(line[1], nkey, "$a0");
 				mpcode.insert(mpcode.end(), "li $v0,1");
 				mpcode.insert(mpcode.end(), "syscall");
 			}
 			else if (item1.gettype() == CHAR_TYPE)
 			{
-				tmp = "lw " + string("$a0,") + to_string(item1.getoffset()*-1) + "($fp)";
-				mpcode.insert(mpcode.end(), tmp);
+				loadword(line[1], nkey, "$a0");
 				mpcode.insert(mpcode.end(), "li $v0,11");
 				mpcode.insert(mpcode.end(), "syscall");
 			}

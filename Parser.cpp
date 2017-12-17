@@ -449,11 +449,6 @@ bool Parser::constDef()
 		value = sign*ntoken.getIntValue();
 		offset = ntable->alloc(4);
 		SymbolItem nitem(name, ttype, kkind, line, offset, value);	
-		if (isexists(nitem)) 
-		{
-			cout << "Error_3" << endl;
-			return false;
-		}
 		ntable->insert(nitem);
 
 		ntoken = gettoken(1);
@@ -488,11 +483,6 @@ bool Parser::constDef()
 			value = sign*ntoken.getIntValue();
 			offset = ntable->alloc(4);
 			SymbolItem nitem(name, ttype, kkind, line, offset, value);
-			if (isexists(nitem))
-			{
-				cout << "Error_3" << endl;
-				return false;
-			}
 			ntable->insert(nitem);
 
 			ntoken = gettoken(1);
@@ -519,11 +509,6 @@ bool Parser::constDef()
 		value = ntoken.getIntValue();
 		offset = ntable->alloc(4);
 		SymbolItem nitem(name, ttype, kkind, line, offset, value);
-		if (isexists(name))
-		{
-			cout << "Error_3" << endl;
-			return false;
-		}
 		ntable->insert(nitem);
 
 		printresult("This is a Const Variable Define!");
@@ -548,11 +533,7 @@ bool Parser::constDef()
 			value = ntoken.getIntValue();
 			offset = ntable->alloc(4);
 			SymbolItem nitem(name, ttype, kkind, line, offset, value);
-			if (isexists(nitem))
-			{
-				cout << "Error_3" << endl;
-				return false;
-			}
+
 			ntable->insert(nitem);
 
 			printresult("This is a Const Variable Define!");
@@ -659,11 +640,6 @@ bool Parser::variableDef()
 
 	offset = ntable->alloc(size);
 	SymbolItem nitem(name, ttype, kkind, line, offset);
-	if (isexists(nitem))
-	{
-		cout << "Error_3" << endl;
-		return false;
-	}
 	ntable->insert(nitem);
 
 	printresult("This is a Variable Define!");
@@ -698,11 +674,7 @@ bool Parser::variableDef()
 
 		offset = ntable->alloc(size);
 		SymbolItem nitem(name, ttype, kkind, line, offset);
-		if (isexists(nitem))
-		{
-			cout << "Error_3" << endl;
-			return false;
-		}
+
 		ntable->insert(nitem);
 
 		printresult("This is a Variable Define!");
@@ -727,11 +699,6 @@ bool Parser::retfunDef()
 	int index = midcodes.size();
 
 	SymbolItem nitem(name, ttype, kkind, line);
-	if (isexists(nitem))
-	{
-		cout << "Error_3" << endl;
-		return false;
-	}
 	ntable->insert(nitem);
 	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
 	map<string, SymbolTable>::iterator iter = tables.find(name);
@@ -886,11 +853,6 @@ bool Parser::parameters(vector<enum type> &paras)
 		line = ntoken.getLinenum();
 		offset = ntable->alloc(size);
 		SymbolItem nitem(name, ttype, kkind, line, offset);
-		if (isexists(nitem))
-		{
-			cout << "Error_3" << endl;
-			return false;
-		}
 		ntable->insert(nitem);
 
 		vector<string> tmp = { "para", type2string(ttype), name };
@@ -948,11 +910,6 @@ bool Parser::unretfunDef()
 	int index = midcodes.size();
 
 	SymbolItem nitem(name, ttype, kkind, line);
-	if (isexists(nitem))
-	{
-		cout << "Error_3" << endl;
-		return false;
-	}
 	ntable->insert(nitem);
 
 	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
@@ -1069,11 +1026,7 @@ bool Parser::mainFun()
 
 	SymbolItem nitem(name, ttype, kkind, line);
 	nitem.setparas(paras);
-	if (isexists(nitem))
-	{
-		cout << "Error_3" << endl;
-		return false;
-	}
+
 	ntable->insert(nitem);
 
 	tables.insert(pair<string, SymbolTable>(name, SymbolTable(1)));
@@ -1293,11 +1246,6 @@ bool Parser::assignSta()
 		islist = true;
 		ntoken = gettoken(1);
 		bool re = expression(ischar, index, minusone);
-		if (ischar)
-		{
-			cout << "Error_3" << endl;
-			return false;
-		}
 		
 		ntoken = gettoken();
 		if (ntoken.getType() != R_SQUARE)
@@ -1682,8 +1630,7 @@ bool Parser::valueParas(vector<enum type> paras, int index)
 	int count = 0;
 	string result;
 	bool re = expression(ischar, result, index);
-	if (count == paras.size() || (paras[count] == INT_TYPE && ischar) ||
-		(paras[count] == CHAR_TYPE && !ischar))
+	if (count == paras.size())
 	{
 		cout << "Error_3" << endl;
 		return false;
@@ -1705,8 +1652,7 @@ bool Parser::valueParas(vector<enum type> paras, int index)
 		if (!re)
 			return false;
 
-		if (count == paras.size()||(paras[count]==INT_TYPE && ischar)||
-			(paras[count] == CHAR_TYPE && !ischar))
+		if (count == paras.size())
 		{
 			cout << "Error_3" << endl;
 			return false;
