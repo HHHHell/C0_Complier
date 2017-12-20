@@ -1428,14 +1428,20 @@ bool Parser::suitationTab(bool ischar, string flag, int &caseindex, string endla
 bool Parser::suitationSta(bool ischar, string flag, int &caseindex, string endlabel)
 {
 	Token ntoken = gettoken();
+	int sign = 1;
 	if (ntoken.getType() != CASE)
 		return false;
 	
 	ntoken = gettoken();
-	if (ntoken.getType() != CONST_INT  && ntoken.getType() != CONST_CHAR)
+	if (ntoken.getType() != CONST_INT  && ntoken.getType() != CONST_CHAR && ntoken.getType() != MINUS&& ntoken.getType() != PLUS)
 		return false;
+	if (ntoken.getType() == MINUS)
+	{
+		sign = -1;
+		ntoken = gettoken();
+	}
 
-	int value = ntoken.getType() == CONST_INT ? ntoken.getIntValue() : int(ntoken.getCharValue());
+	int value = ntoken.getType() == CONST_INT ? ntoken.getIntValue()*sign : int(ntoken.getCharValue());
 	string thisflag = genvar(value);
 	midcodes.insert({"li", thisflag, to_string(value)}, caseindex++);
 	string caselabel = genlabel();
