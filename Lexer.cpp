@@ -290,7 +290,7 @@ Token Lexer::nextsym()
 		lastch = fgetc(fin);
 		while (lastch != '\'' && n < 3)
 		{
-			if (!isdigit(lastch) && !isalpha(lastch) && lastch != '+'&& lastch != '-' && lastch != '*' && lastch != '/') 
+			if (!isdigit(lastch) && !isalpha(lastch) && lastch != '+'&& lastch != '-' && lastch != '*' && lastch != '/' && lastch != '_')
 			{
 /*				Error err = Error(line_num, 3);
 				err.printerr();
