@@ -7,7 +7,6 @@ int out_1, out_2[20];
 char out_a, out_b[50];
 
 int foo1(int a, int b){
-	int a;
 	a = 1;
 	printf("foo_1 ");
 	return (a);
@@ -92,6 +91,7 @@ void Main(){
 
 	while(in_2[1] < 10){
 		in_2[1] = in_2[1] + 1;
+		printf("* ");
 	}
 
 	in_2[2] = foo1(1, 2);

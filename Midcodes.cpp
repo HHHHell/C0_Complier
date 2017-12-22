@@ -10,6 +10,103 @@
 using namespace std;
 Midcodes::Midcodes(map<string, SymbolTable> &t):tables(t) {}
 
+SymbolItem Midcodes::find(string name, string nkey)
+{
+	map<string, SymbolTable>::iterator iter = tables.find(nkey);
+	if (iter == tables.end())
+	{
+		return SymbolItem();
+	}
+	SymbolTable *ntable = &(iter->second);
+	if (nkey != "#OverAll")
+	{
+		if (ntable->isexists(name))
+		{
+			SymbolItem item = ntable->find(name);
+			return item;
+		}
+		iter = tables.find("#OverAll");
+		SymbolTable ttable = iter->second;
+		if (ttable.isexists(name))
+		{
+			SymbolItem item = ttable.find(name);
+			return item;
+		}
+		return SymbolItem();
+	}
+	else
+	{
+		if (ntable->isexists(name))
+		{
+			SymbolItem item = ntable->find(name);
+			return item;
+		}
+		return SymbolItem();
+	}
+}
+
+void Midcodes::insert(vector<string> strs)
+{
+	vector<string> s;
+	for (int i = 0; i < strs.size(); i++)
+	{
+		string str;
+		str.assign(strs[i]);
+		s.insert(s.end(), str);
+	}
+	clist.insert(clist.end(), s);
+}
+
+void Midcodes::insert(vector<string> strs, int index)
+{
+	vector<string> s;
+	for (int i = 0; i < strs.size(); i++)
+	{
+		string str;
+		str.assign(strs[i]);
+		s.insert(s.end(), str);
+	}
+	vector<vector<string>>::iterator iter = clist.begin();
+	if (index >= clist.size())
+		iter = clist.end();
+	else
+	{
+		int j = 0;
+		while (j < index)
+		{
+			iter++;
+			j++;
+		}
+	}
+	clist.insert(iter, s);
+}
+
+void Midcodes::refill(string s, int index)
+{
+	clist[index].insert(clist[index].end(), s);
+}
+
+int Midcodes::size()
+{
+	return clist.size();
+}
+
+void Midcodes::output(string filename)
+{
+	ofstream fout;
+	fout.open(filename);
+	for (int i = 0; i < clist.size(); i++)
+	{
+		for (int j = 0; j < clist[i].size(); j++)
+		{
+			fout << clist[i][j] << " ";
+		}
+		fout << endl;
+	}
+	fout.flush();
+	fout.close();
+}
+
 void Midcodes::loadword(string name, string nkey, string tar, string index)
 {
 	string base = "0x7fffeffc";
@@ -124,106 +221,9 @@ void Midcodes::saveword(string name, string nkey, string src, string index)
 	}
 }
 
-SymbolItem Midcodes::find(string name, string nkey)
-{
-	map<string, SymbolTable>::iterator iter = tables.find(nkey);
-	if (iter == tables.end())
-	{
-		return SymbolItem();
-	}
-	SymbolTable *ntable = &(iter->second);
-	if (nkey != "#OverAll")
-	{
-		if (ntable->isexists(name))
-		{
-			SymbolItem item = ntable->find(name);
-			return item;
-		}
-		iter = tables.find("#OverAll");
-		SymbolTable ttable = iter->second;
-		if (ttable.isexists(name))
-		{
-			SymbolItem item = ttable.find(name);
-			return item;
-		}
-		return SymbolItem();
-	}
-	else
-	{
-		if (ntable->isexists(name))
-		{
-			SymbolItem item = ntable->find(name);
-			return item;
-		}
-		return SymbolItem();
-	}
-}
-
-void Midcodes::insert(vector<string> strs)
-{
-	vector<string> s;
-	for (int i = 0; i < strs.size(); i++)
-	{
-		string str;
-		str.assign(strs[i]);
-		s.insert(s.end(), str);
-	}
-	clist.insert(clist.end(), s);
-}
-
-void Midcodes::insert(vector<string> strs, int index)
-{
-	vector<string> s;
-	for (int i = 0; i < strs.size(); i++)
-	{
-		string str;
-		str.assign(strs[i]);
-		s.insert(s.end(), str);
-	}
-	vector<vector<string>>::iterator iter = clist.begin();
-	if (index >= clist.size())
-		iter = clist.end();
-	else
-	{
-		int j = 0;
-		while (j < index)
-		{
-			iter++;
-			j++;
-		}
-	}
-	clist.insert(iter, s);
-}
-
-void Midcodes::refill(string s, int index)
-{
-	clist[index].insert(clist[index].end(), s);
-}
-
-int Midcodes::size()
-{
-	return clist.size();
-}
-
-void Midcodes::output(string filename)
-{
-	ofstream fout;
-	fout.open(filename);
-	for (int i = 0; i < clist.size(); i++)
-	{
-		for (int j = 0; j < clist[i].size(); j++)
-		{
-			fout << clist[i][j] << " ";
-		}
-		fout << endl;
-	}
-	fout.flush();
-	fout.close();
-}
-
 void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 {
-	string tmp;
+	string tmp, nfunc = "#OverAll";
 	string nkey = "#OverAll";
 	map<string, SymbolTable>::iterator giter = tables.find(nkey);
 	SymbolTable* ntable = &(giter->second);
@@ -288,6 +288,11 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 				tmp = tmp + line[j] + " ";
 			}
 			mpcode.insert(mpcode.end(), tmp);
+
+			if (line[0][0] != '.')
+			{
+				nfunc.assign(line[0]);
+			}
 		}
 		else if (line[0] == "goto")
 		{
@@ -438,6 +443,12 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		{
 			if (line.size() == 1)
 			{
+				if (nfunc == "main")
+				{
+					mpcode.insert(mpcode.end(), "li $v0,10");
+					mpcode.insert(mpcode.end(), "syscall");
+					continue;
+				}
 				mpcode.insert(mpcode.end(), "lw $ra,0($fp)");
 				mpcode.insert(mpcode.end(), "lw $sp,-4($fp)");
 				mpcode.insert(mpcode.end(), "lw $fp,-8($fp)");

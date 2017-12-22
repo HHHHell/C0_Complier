@@ -2001,6 +2001,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 	Token ntoken = gettoken(1);
 	bool re = false;
 	vector<string> tmp;
+	enum type t;
 	switch (ntoken.getType())
 	{
 	case IDENTITY:
@@ -2025,17 +2026,22 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 				return false;
 			}
 			if (item.gettype() == INT_TYPE)
+			{
 				ischar = false;
+				t = INT_TYPE;
+			}
 			else
+			{
 				ischar = true;
-
+				t = CHAR_TYPE;
+			}
 			pretoken.erase(pretoken.begin());
 			pretoken.erase(pretoken.begin());
 
 			bool ichar = false;
 
 			string num1, num2;
-			num2 = genvar();
+			num2 = genvar(t);
 
 			ntoken = gettoken(1);
 			re = expression(ichar, num1, index);

@@ -1,0 +1,251 @@
+_asfunc_1 : 
+func int _asfunc_1 2 
+para int a 
+para char c 
+= a aa 
+= c cc 
+li #var1 1 
+= #var1 bb 
+bnz aa > bb .label1 
+goto .label2 
+.label1 : 
+li #var2 105 
+- cc #var2 #var3 
+li #var4 0 
+bnz #var4 == #var3 .label5 
+goto .label6 
+.label5 : 
+- aa bb #var5 
+li #var6 105 
+call _asfunc_1 2 
+valpara #var5 
+valpara #var6 
+= ret #var7 
+* a #var7 #var8 
+ret #var8 
+goto .label4 
+.label6 : 
+li #var9 1 
+- aa #var9 #var10 
+li #var11 99 
+call _asfunc_1 2 
+valpara #var10 
+valpara #var11 
+= ret #var12 
+* a #var12 #var13 
+ret #var13 
+goto .label4 
+.label4 : 
+goto .label3 
+.label2 : 
+li #var14 105 
+bnz #var14 == cc .label8 
+goto .label9 
+.label8 : 
+print _string1 
+goto .label7 
+.label9 : 
+print _string2 
+goto .label7 
+.label7 : 
+li #var15 1 
+ret #var15 
+.label3 : 
+min : 
+func int min 2 
+para int a 
+para int b 
+bnz a < b .label10 
+goto .label11 
+.label10 : 
+ret a 
+goto .label12 
+.label11 : 
+bnz a == b .label13 
+goto .label14 
+.label13 : 
+ret a 
+goto .label15 
+.label14 : 
+ret b 
+.label15 : 
+.label12 : 
+max : 
+func int max 2 
+para int a 
+para int b 
+bnz a > b .label16 
+goto .label17 
+.label16 : 
+ret a 
+goto .label18 
+.label17 : 
+ret b 
+.label18 : 
+no_sfc : 
+func void no_sfc 2 
+para int a 
+para int b 
+= a aa 
+= b bb 
+bnz aa > maxs .label19 
+goto .label20 
+.label19 : 
+li #var16 1 
+- 0 #var16 #var17 
+= #var17 res 
+ret 
+goto .label21 
+.label20 : 
+.label21 : 
+call min 2 
+valpara aa 
+valpara bb 
+= ret #var18 
+= #var18 begin 
+call max 2 
+valpara aa 
+valpara bb 
+= ret #var19 
+= #var19 end 
++ begin end #var20 
+- end begin #var21 
+li #var22 1 
++ #var21 #var22 #var23 
+* #var20 #var23 #var24 
+li #var25 2 
+/ #var24 #var25 #var26 
+= #var26 res 
+ret 
+print1 : 
+func void print1 2 
+para int res1 
+para int res2 
+print _string3 
+print res1 
+print _string4 
+li #var27 2 
++ res2 #var27 #var28 
+li #var29 1 
+- #var28 #var29 #var30 
+li #var31 1 
+- #var30 #var31 #var32 
+print #var32 
+ret 
+print2 : 
+func void print2 0 
+li #var33 1 
+- 0 #var33 #var34 
+bnz res != #var34 .label22 
+goto .label23 
+.label22 : 
+print _string5 
+print res 
+goto .label24 
+.label23 : 
+print _string6 
+.label24 : 
+ret 
+main : 
+func void main 0 
+scan s_firi 
+scan s_seci 
+scan s_firc 
+scan s_secc 
+li #var35 0 
+bnz s_firi < #var35 .label25 
+goto .label26 
+.label25 : 
+print _string7 
+ret 
+goto .label27 
+.label26 : 
+li #var36 0 
+bnz s_seci < #var36 .label28 
+goto .label29 
+.label28 : 
+print _string7 
+ret 
+goto .label30 
+.label29 : 
+.label30 : 
+.label27 : 
+bnz s_firi >= s_seci .label31 
+goto .label32 
+.label31 : 
+= s_firi ni 
+goto .label33 
+.label32 : 
+= s_seci ni 
+.label33 : 
+li #var37 0 
+bnz ni <= #var37 .label34 
+goto .label35 
+.label34 : 
+.label37 : 
+li #var38 0 
+bnz ni <= #var38 .label38 
+goto .label39 
+.label38 : 
+li #var39 1 
++ ni #var39 #var40 
+= #var40 ni 
+goto .label37 
+.label39 : 
+goto .label36 
+.label35 : 
+li #var41 1 
++ ni #var41 #var42 
+= #var42 ni 
+.label36 : 
+- s_firc s_secc #var43 
+li #var44 1 
+bnz #var44 == #var43 .label41 
+li #var46 2 
+bnz #var46 == #var43 .label42 
+li #var48 -1 
+bnz #var48 == #var43 .label43 
+li #var50 -2 
+bnz #var50 == #var43 .label44 
+goto .label45 
+.label41 : 
+li #var45 1 
+= #var45 nc 
+goto .label40 
+.label42 : 
+li #var47 2 
+= #var47 nc 
+goto .label40 
+.label43 : 
+li #var49 3 
+= #var49 nc 
+goto .label40 
+.label44 : 
+li #var51 4 
+= #var51 nc 
+goto .label40 
+.label45 : 
+li #var52 5 
+= #var52 nc 
+goto .label40 
+.label40 : 
+li #var53 105 
+call _asfunc_1 2 
+valpara ni 
+valpara #var53 
+= ret #var54 
+= #var54 resulti 
+li #var55 99 
+call _asfunc_1 2 
+valpara nc 
+valpara #var55 
+= ret #var56 
+= #var56 resultc 
+call print1 2 
+valpara resulti 
+valpara resultc 
+call no_sfc 2 
+valpara resulti 
+valpara resultc 
+call print2 0 
+ret 
