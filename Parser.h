@@ -57,10 +57,9 @@ public:
 	bool suitationSta(bool ischar, string flag, int &caseindex, string endlabel);
 	bool defaultSta(int &caseindex, string endlabel);
 	bool whileSta();
-	bool funCall();
-	bool retfunCall();
+	bool retfunCall(int &index);
 	bool unretfunCall();
-	bool valueParas(vector<enum type> paras, int index);
+	bool valueParas(vector<enum type> paras, int &index);
 	bool returnSta();
 	bool printSta();
 	bool scanSta();

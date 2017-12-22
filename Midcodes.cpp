@@ -124,7 +124,6 @@ void Midcodes::saveword(string name, string nkey, string src, string index)
 	}
 }
 
-
 SymbolItem Midcodes::find(string name, string nkey)
 {
 	map<string, SymbolTable>::iterator iter = tables.find(nkey);
@@ -261,6 +260,7 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		if (iter->second.getkind() != CONST_VAR)
 			continue;
 		SymbolItem item = iter->second;
+
 		tmp = "li $s1," + to_string(item.getvalue());
 		mpcode.insert(mpcode.end(), tmp);
 		tmp = "sw $s1," + to_string(item.getoffset()*-1) + "($fp)";
@@ -367,6 +367,12 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 		}
 		else if (line[0] == "bnz")
 		{
+			if (line.size() == 3)
+			{
+				loadword(line[1], nkey, "$s1");
+				mpcode.insert(mpcode.end(), "bne $zero,$s1," + line[2]);
+				continue;
+			}
 			loadword(line[1], nkey, "$s1");
 			loadword(line[3], nkey, "$s2");
 
@@ -384,7 +390,7 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 			}
 			else if (line[2] == "<=")
 			{
-				tmp = "sub $s1,$s1,$s1";
+				tmp = "sub $s1,$s1,$s2";
 				mpcode.insert(mpcode.end(), tmp);
 				tmp = "blez $s1," + line[4];
 				mpcode.insert(mpcode.end(), tmp);

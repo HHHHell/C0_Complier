@@ -70,12 +70,6 @@ Token Parser::gettoken(int mode = 0)
 	return ntoken;
 }
 
-bool Parser::isexists(SymbolItem item)
-{
-	string name = item.getname();
-	return isexists(name);
-}
-
 bool Parser::isexists(string name)
 {
 	if (nkey != "#OverAll")
@@ -506,7 +500,7 @@ bool Parser::constDef()
 		if (ntoken.getType() != CONST_CHAR)
 			return false;
 		
-		value = ntoken.getIntValue();
+		value = ntoken.getCharValue();
 		offset = ntable->alloc(4);
 		SymbolItem nitem(name, ttype, kkind, line, offset, value);
 		ntable->insert(nitem);
@@ -530,7 +524,7 @@ bool Parser::constDef()
 			if (ntoken.getType() != CONST_CHAR)
 				return false;
 
-			value = ntoken.getIntValue();
+			value = ntoken.getCharValue();
 			offset = ntable->alloc(4);
 			SymbolItem nitem(name, ttype, kkind, line, offset, value);
 
@@ -1150,10 +1144,11 @@ bool Parser::statement()
 				cout << "Error_3" << endl;
 				return false;
 			}
+			int index = midcodes.size();
 			if (item.gettype() == VOID_TYPE)
 				re = unretfunCall();
 			else
-				re = retfunCall();
+				re = retfunCall(index);
 			if (!re)
 				return false;
 			ntoken = gettoken();
@@ -1222,7 +1217,7 @@ bool Parser::statement()
 
 bool Parser::assignSta()
 {
-	int minusone = -1;
+	int minusone = midcodes.size();
 	Token ntoken = gettoken();
 	bool ischar;
 	if (ntoken.getType() != IDENTITY)
@@ -1345,7 +1340,7 @@ bool Parser::ifSta()
 
 bool Parser::switchSta()
 {
-	int minusone = -1;
+	int minusone = midcodes.size();
 	Token ntoken = gettoken();
 	if (ntoken.getType() != SWITCH)
 		return false;
@@ -1552,7 +1547,7 @@ bool Parser::whileSta()
 	return true;
 }
 
-bool Parser::retfunCall()
+bool Parser::retfunCall(int &index)
 {
 	Token ntoken = gettoken();
 	if (ntoken.getType() != IDENTITY)
@@ -1561,8 +1556,7 @@ bool Parser::retfunCall()
 	SymbolItem item = pfind(name);
 	vector<enum type> paras = item.getparas();
 
-	int index = midcodes.size();
-	midcodes.insert({"call", name, to_string(paras.size())});
+	midcodes.insert({ "call", name, to_string(paras.size()) }, index);
 
 	ntoken = gettoken(1);
 	if (ntoken.getType() == L_BRACK)
@@ -1573,7 +1567,10 @@ bool Parser::retfunCall()
 			ntoken = lex.nextsymbol();
 			pretoken.insert(pretoken.begin(), ntoken);
 		}
-		bool re = valueParas(paras, index);
+		bool re = false;
+		re = valueParas(paras, index);
+		index++;
+
 		if (!re)
 			return false;
 
@@ -1630,12 +1627,12 @@ bool Parser::unretfunCall()
 	return true;
 }
 
-bool Parser::valueParas(vector<enum type> paras, int index)
+bool Parser::valueParas(vector<enum type> paras, int &up)
 {
 	bool ischar;
 	int count = 0;
 	string result;
-	bool re = expression(ischar, result, index);
+	bool re = expression(ischar, result, up);
 	if (count == paras.size())
 	{
 		cout << "Error_3" << endl;
@@ -1645,8 +1642,7 @@ bool Parser::valueParas(vector<enum type> paras, int index)
 	count++;
 	if (!re)
 		return false;
-	
-	midcodes.insert({"valpara", result});
+	midcodes.insert({ "valpara", result }, up + count);
 
 	Token ntoken = gettoken(1);
 	while (ntoken.getType() == COMMA)
@@ -1654,7 +1650,7 @@ bool Parser::valueParas(vector<enum type> paras, int index)
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
 		string result;
-		re = expression(ischar, result, index);
+		re = expression(ischar, result, up);
 		if (!re)
 			return false;
 
@@ -1664,8 +1660,7 @@ bool Parser::valueParas(vector<enum type> paras, int index)
 			return false;
 		}
 		count++;
-
-		midcodes.insert({ "valpara", result });
+		midcodes.insert({ "valpara", result }, up + count);
 
 		ntoken = gettoken(1);
 	}
@@ -1681,13 +1676,14 @@ bool Parser::valueParas(vector<enum type> paras, int index)
 		pretoken.insert(pretoken.begin(), ntoken);
 	}
 
+	up = up + count;
 	printresult("This is a Value Parameters!");
 	return true;
 }
 
 bool Parser::returnSta()
 {
-	int minusone = -1;
+	int minusone = midcodes.size();
 	bool ischar;
 	Token ntoken = gettoken();
 	if (ntoken.getType() != RETURN)
@@ -1729,7 +1725,7 @@ bool Parser::returnSta()
 
 bool Parser::printSta()
 {
-	int minusone = -1;
+	int minusone = midcodes.size();
 	Token ntoken = gettoken();
 	if (ntoken.getType() != PRINTF)
 		return false;
@@ -1745,6 +1741,7 @@ bool Parser::printSta()
 		string str = ntoken.getStrValue();
 		str = genvar(str);
 		midcodes.insert({"print", str});
+		minusone = midcodes.size();
 
 		ntoken = gettoken();
 
@@ -1832,10 +1829,12 @@ bool Parser::conditionSta(vector<string> &cond)
 {
 	bool ischar;
 	string con1, op, con2;
-	int minusone = -1;
+	int minusone = midcodes.size();
 	bool re = expression(ischar, con1, minusone);
 	if (!re)
 		return false;
+	cond.insert(cond.end(), con1);
+
 	Token ntoken = gettoken(1);
 	if (ntoken.getType() == GREATER || ntoken.getType() == SMALLER ||
 		ntoken.getType() == NOLESS || ntoken.getType() == NOBIGGER ||
@@ -1871,10 +1870,9 @@ bool Parser::conditionSta(vector<string> &cond)
 		re = expression(ischar, con2, minusone);
 		if (!re)
 			return false;
+		cond.insert(cond.end(), op);
+		cond.insert(cond.end(), con2);
 	}
-	cond.insert(cond.end(), con1);
-	cond.insert(cond.end(), op);
-	cond.insert(cond.end(), con2);
 
 	printresult("This is a Condition Statement!");
 	return true;
@@ -2070,7 +2068,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 			else
 				ischar = true;
 
-			re = retfunCall();
+			re = retfunCall(index);
 			if (!re)
 				return false;
 
@@ -2109,7 +2107,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 					t = CHAR_TYPE;
 					ischar = true;
 				}
-				re = retfunCall();
+				re = retfunCall(index);
 				if (!re)
 					return false;
 
