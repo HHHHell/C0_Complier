@@ -18,4 +18,5 @@ public:
 	void printerr();
 	int skiperr(char* end_char);
 };
+
 #endif // !ERROR_H_

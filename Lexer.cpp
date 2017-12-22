@@ -50,7 +50,6 @@ Token Lexer::nextsymbol()
 	Token ntoken = nextsym();
 	if (ntoken.getType() != NOTDEFINE)
 	{
-//		cout << token_count << ' ' << ntoken.toString() << endl;
 		lout << token_count++ << ' ' << ntoken.toString() << endl;
 	}
 	if (ntoken.getType() == NOTDEFINE && checkfile())
@@ -91,7 +90,6 @@ Token Lexer::nextsym()
 			}
 			lastch = fgetc(fin);
 		}
-		//ungetc(lastch, fin);
 		word[n] = '\0';
 		std::string ss = word;
 		std::string ts = str2lower(ss);
@@ -174,7 +172,6 @@ Token Lexer::nextsym()
 			word[n++] = lastch;
 			lastch = fgetc(fin);
 		}
-		//ungetc(lastch, fin);
 		word[n] = '\0';
 		type = CONST_INT;
 		return Token(type, atoi(word), line_num);
@@ -193,7 +190,6 @@ Token Lexer::nextsym()
 			type = NOLESS;
 			return Token(type, ">=", line_num);
 		}
-		//ungetc(lastch, fin);
 		word[n] = '\0';
 		type = GREATER;
 		return Token(type, ">", line_num);
@@ -212,7 +208,6 @@ Token Lexer::nextsym()
 			type = NOBIGGER;
 			return Token(type, "<=", line_num);
 		}
-		//ungetc(lastch, fin);
 		word[n] = '\0';
 		type = SMALLER;
 		return Token(type, "<", line_num);
@@ -231,8 +226,10 @@ Token Lexer::nextsym()
 			type = NOTEQUAL;
 			return Token(type, "!=", line_num);
 		}
-		// error code not define
-/*		Error err = Error(line_num, 1);
+
+/*
+		error code not define
+		Error err = Error(line_num, 1);
 		err.printerr();
 		err.skiperr();
 */
@@ -253,7 +250,6 @@ Token Lexer::nextsym()
 			return Token(type, "==", line_num);
 		}
 		word[n] = '\0';
-//		ungetc(lastch, fin);
 		type = ASSIGN;
 		return Token(type, "=", line_num);
 	}

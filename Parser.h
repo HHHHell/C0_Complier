@@ -32,6 +32,7 @@ private:
 	string genvar(int value, enum type t);
 	string genvar(string str);
 	string genlabel();
+
 public:
 	bool result;
 

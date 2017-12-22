@@ -1,10 +1,12 @@
-#include "iostream"
-#include "string"
-#include "vector"
 #include "parser.h"
 #include "lexer.h"
 #include "token.h"
 #include "error.h"
+
+#include "iostream"
+#include "string"
+#include "vector"
+#include "sstream"
 
 using namespace std;
 extern std::string str2lower(std::string str);
@@ -14,6 +16,16 @@ string type2string(enum type ttype)
 	string list[] = {"null", "int", "char", "void"};
 	return list[ttype];
 }
+
+/*
+string to_string(int num)
+{
+	ostringstream ostr;
+	ostr << num;
+	string tmp = ostr.str();
+	return tmp;
+}
+*/
 
 Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 	: lex(l), tables(tlist), midcodes(m), result(false)

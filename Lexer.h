@@ -16,6 +16,7 @@ private:
 	ofstream lout;
 	int token_count;
 	Token nextsym();
+
 public:
 	Lexer();
 	~Lexer();

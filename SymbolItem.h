@@ -20,8 +20,7 @@ public:
 	SymbolItem();
 	SymbolItem(string n, enum type t, enum kind k, int line);
 	SymbolItem(string n, enum type t, enum kind k, int line, int off);
-	SymbolItem(string n, enum type t, enum kind k, 
-		int line, int off, int v);
+	SymbolItem(string n, enum type t, enum kind k, int line, int off, int v);
 	SymbolItem(string name, string strvalue);
 	SymbolItem(const SymbolItem &item);
 	void setoffset(int s);

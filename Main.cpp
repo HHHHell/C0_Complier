@@ -12,14 +12,18 @@ int main(){
 	using namespace std;
 	char filename[MAXLENGTH];
 
-	cout << "Please input your file path:" << endl;
+	cout << "Please input your file path: " << endl;
 	cin >> filename;
-	Lexer lex(filename);
-	if (!lex.checkfile())
+	ifstream infile(filename);
+	while (!infile)
 	{
-		cout << "Cann't open file: " << filename << endl;
-		return 0;
+		cout << "Cann't open file: " << filename << endl << endl;
+		cout << "Please input file path again: " << endl;
+		cin >> filename;
+		infile.open(filename);
 	}
+
+	Lexer lex(filename);
 	map<string, SymbolTable> tables;
 	Midcodes mcodes(tables);
 

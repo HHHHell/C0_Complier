@@ -47,8 +47,7 @@ enum symbol
 	L_SQUARE,	// '['
 	R_SQUARE,	// ']'
 	L_CURLY,	// '{'
-	R_CURLY,	// '}'
-	UDL
+	R_CURLY		// '}'
 };
 
 enum type

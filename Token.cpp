@@ -113,6 +113,7 @@ Token::Token(enum symbol _type, std::string _str, int _line)
 
 }
 
+
 enum symbol Token::getType()
 {
 	return type;

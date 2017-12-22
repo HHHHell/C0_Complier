@@ -10,6 +10,7 @@ class Midcodes
 	map<string, SymbolTable> &tables;
 	vector<vector<string>> clist;
 	vector<string> mpcode;
+
 public:
 	Midcodes(map<string, SymbolTable> &t);
 	SymbolItem find(string name, string nkey);

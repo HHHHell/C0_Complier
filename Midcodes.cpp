@@ -8,6 +8,9 @@
 #include "symboltable.h"
 
 using namespace std;
+
+//extern to_string(int num);
+
 Midcodes::Midcodes(map<string, SymbolTable> &t):tables(t) {}
 
 SymbolItem Midcodes::find(string name, string nkey)
