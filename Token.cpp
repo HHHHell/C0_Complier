@@ -6,6 +6,7 @@
 #include "error.h"
 #include "token.h"
 
+//extern string to_string(int num);
 string symstring[] = {
 	"NOTDEFINE",
 	"IDENTITY",
@@ -142,13 +143,13 @@ int Token::getLinenum()
 string Token::toString()
 {
 	using namespace std;
+	string s;
 	string str = id2symbol(type) + ' ';
 	switch (type)
 	{
 	case CONST_INT:
-		char x[100];
-		itoa(getIntValue(), x, 10);
-		str += x;
+		s = to_string(getIntValue());
+		str += s;
 		break;
 	case  CONST_CHAR:
 		str += getCharValue();

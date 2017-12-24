@@ -8,8 +8,10 @@
 #include "error.h"
 #include "parser.h"
 
+using namespace std;
+
+int Error::errnum = 0;
 int main(){
-	using namespace std;
 	char filename[MAXLENGTH];
 
 	cout << "Please input your file path: " << endl;
@@ -24,6 +26,7 @@ int main(){
 	}
 
 	Lexer lex(filename);
+	
 	map<string, SymbolTable> tables;
 	Midcodes mcodes(tables);
 
@@ -39,10 +42,14 @@ int main(){
 	parser.result = re;
 	if (!re)
 	{
-		cout << "Error!" << endl;
-		return 0;
+		cout << "Error occured!" << endl;
 	}
-	mcodes.output("result//mcodes.txt");
-	mcodes.toMips("result//finalcode.asm", tables);
+	else
+	{
+		mcodes.output("result//mcodes.txt");
+		mcodes.toMips("result//finalcode.asm", tables);
+
+		cout << "Finished!" << endl;
+	}
 	return 0;
 }

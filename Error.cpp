@@ -11,39 +11,24 @@ Error::Error(int line, int code)
 {
 	line_num = line;
 	errcode = code;
+	no = errnum++;
 }
 
 void Error::printerr()
 {
 	using namespace std;
+	cout << no << " ";
 	switch (errcode)
 	{
 	case INVALID_CHAR:
-		cout << "Invalid characters in line: " << line_num;
+		cout << "Invalid characters in line: " << line_num << endl;
 		break;
-	case UNMAtCH_SQUOTE:
-		cout << "Unmatched sigle quote in line: " << line_num;
+	case UNMAtCH_SYMBOL:
+		cout << "Unmatched symbols in line: " << line_num << endl;
 		break;
-	case UNMATCH_DQUOTE:
-		cout << "Unmatched double quote in line: " << line_num;
-		break;
+	case SYNTAX_ERROR:
+		cout << "Syntax error in line: " << line_num << endl;
 	default:
 		break;
 	}
-}
-
-int Error::skiperr(char* end_char)
-{
-	using namespace std;
-
-	int i = 0;
-	switch (errcode)
-	{
-	default:
-		end_char[i++] = ' ';
-		end_char[i++] = '\n';
-		end_char[i++] = '\t';
-		break;
-	}
-	return i;
 }

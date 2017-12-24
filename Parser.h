@@ -17,7 +17,7 @@ private:
 	vector<Token> pretoken;
 	SymbolTable *ntable;
 	string nkey;
-	ofstream pout;
+	ofstream parserout;
 
 	int varnum;
 

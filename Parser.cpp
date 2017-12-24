@@ -33,24 +33,24 @@ Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 	varnum = 1;
 	ntable = &(tables.find("#OverAll")->second);
 	nkey = "#OverAll";
-	pout.open("result\\parser_result.txt");
+	parserout.open("result\\parser_result.txt");
 }
 
 Parser::~Parser()
 {
 	if (result)
-		pout << "\nFinished!" << endl;
+		parserout << "\nFinished!" << endl;
 	else
-		pout << "\nError!" << endl;
-	pout.flush();
-	pout.close();
+		parserout << "\nError!" << endl;
+	parserout.flush();
+	parserout.close();
 }
 
 void Parser::printresult(string str)
 {
-	pout << str << endl;
-	cout << str << endl;
-	pout.flush();
+	parserout << str << endl;
+//	cout << str << endl;
+	parserout.flush();
 }
 
 Token Parser::gettoken(int mode = 0)
@@ -1058,6 +1058,7 @@ bool Parser::mainFun()
 	if (ntoken.getType() != R_CURLY)
 		return false;
 
+	midcodes.insert({ "ret" });
 	printresult("This is a Main Function!");
 	if (pretoken.size() == 0)
 	{
@@ -1581,7 +1582,6 @@ bool Parser::retfunCall(int &index)
 		}
 		bool re = false;
 		re = valueParas(paras, index);
-		index++;
 
 		if (!re)
 			return false;
@@ -1591,6 +1591,7 @@ bool Parser::retfunCall(int &index)
 			return false;
 	}
 
+	index++;
 	if (pretoken.size() == 0)
 	{
 		ntoken = lex.nextsymbol();
@@ -1752,7 +1753,6 @@ bool Parser::printSta()
 	{
 		string str = ntoken.getStrValue();
 		str = genvar(str);
-		midcodes.insert({"print", str});
 		minusone = midcodes.size();
 
 		ntoken = gettoken();
@@ -1769,10 +1769,15 @@ bool Parser::printSta()
 			string result;
 			bool re = expression(ischar, result, minusone);
 
+			midcodes.insert({ "print", str });
 			midcodes.insert({ "print", result });
 
 			if (!re)
 				return false;
+		}
+		else
+		{
+			midcodes.insert({ "print", str });
 		}
 	}
 	else

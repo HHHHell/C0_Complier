@@ -3,6 +3,7 @@
 #include "iostream"
 #include "fstream"
 #include "map"
+#include "stdlib.h"
 
 #include "midcodes.h"
 #include "symboltable.h"

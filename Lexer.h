@@ -3,6 +3,7 @@
 
 #include "vector"
 #include "fstream"
+
 #include "Error.h"
 #include "define.h"
 #include "Token.h"
@@ -13,7 +14,7 @@ private:
 	std::FILE* fin;
 	int line_num;
 
-	ofstream lout;
+	ofstream lexout;
 	int token_count;
 	Token nextsym();
 
@@ -24,7 +25,7 @@ public:
 	char getLastchar();
 	int checkfile();
 	Token nextsymbol();
-	bool skip(char* end_char);
+	bool skip(vector<char> end_char);
 };
 
 #endif // !LEXER_H_

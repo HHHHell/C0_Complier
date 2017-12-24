@@ -1,6 +1,8 @@
+#include "vector"
 #include "iostream"
 #include "string"
 #include "fstream"
+
 #include "lexer.h"
 #include "define.h"
 #include "error.h"
@@ -19,15 +21,15 @@ Lexer::Lexer(char* filename)
 	lastch = '\0';
 	line_num = 1;
 	fin = fopen(filename, "r");
-	lout.open("result\\lexer_result.txt");
+	lexout.open("result\\lexer_result.txt");
 	token_count = 1;
 }
 
 Lexer::~Lexer()
 {
-	lout << "\nFinished!";
-	lout.flush();
-	lout.close();
+	lexout << "\nFinished!";
+	lexout.flush();
+	lexout.close();
 	fclose(fin);
 }
 
@@ -50,15 +52,15 @@ Token Lexer::nextsymbol()
 	Token ntoken = nextsym();
 	if (ntoken.getType() != NOTDEFINE)
 	{
-		lout << token_count++ << ' ' << ntoken.toString() << endl;
+		lexout << token_count++ << ' ' << ntoken.toString() << endl;
 	}
 	if (ntoken.getType() == NOTDEFINE && checkfile())
 	{
 		cout << "Not defined" << endl;
-		lout << "Not defined" << endl;
+		lexout << "Not defined" << endl;
 
 	}
-	lout.flush();
+	lexout.flush();
 	return ntoken;
 }
 
@@ -98,62 +100,62 @@ Token Lexer::nextsym()
 			type = RETURN;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "while")
+		else if (ts == "while")
 		{
 			type = WHILE;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "if")
+		else if (ts == "if")
 		{
 			type = IF;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "else")
+		else if (ts == "else")
 		{
 			type = ELSE;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "switch")
+		else if (ts == "switch")
 		{
 			type = SWITCH;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "case")
+		else if (ts == "case")
 		{
 			type = CASE;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "default")
+		else if (ts == "default")
 		{
 			type = DEFAULT;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "printf")
+		else if (ts == "printf")
 		{
 			type = PRINTF;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "scanf")
+		else if (ts == "scanf")
 		{
 			type = SCANF;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "void")
+		else if (ts == "void")
 		{
 			type = VOID;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "int")
+		else if (ts == "int")
 		{
 			type = INT;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "char")
+		else if (ts == "char")
 		{
 			type = CHAR;
 			return Token(type, ss, line_num);
 		}
-		if (ts == "const")
+		else if (ts == "const")
 		{
 			type = CONST;
 			return Token(type, ss, line_num);
@@ -227,12 +229,15 @@ Token Lexer::nextsym()
 			return Token(type, "!=", line_num);
 		}
 
-/*
-		error code not define
-		Error err = Error(line_num, 1);
+		Error err = Error(line_num, UNMAtCH_SYMBOL);
 		err.printerr();
-		err.skiperr();
-*/
+		vector<char> list = { ';', '\n' };
+		bool re = skip(list);
+		if (re)
+		{
+			return nextsym();
+		}
+
 		return Token(NOTDEFINE, '\0', line_num);
 	}
 
@@ -262,11 +267,15 @@ Token Lexer::nextsym()
 		{
 			if (lastch < 32 || lastch > 127)
 			{
-/*				Error err = Error(line_num, 2);
+				Error err = Error(line_num, UNMAtCH_SYMBOL);
 				err.printerr();
-				err.skiperr();
-*/
-				cout << "error in " << line_num << endl;
+				vector<char> list = { ';', '\n' };
+				bool re = skip(list);
+				if (re)
+				{
+					return nextsym();
+				}
+
 				return Token(NOTDEFINE, '\0', line_num);
 			}
 			word[n++] = lastch;
@@ -288,11 +297,15 @@ Token Lexer::nextsym()
 		{
 			if (!isdigit(lastch) && !isalpha(lastch) && lastch != '+'&& lastch != '-' && lastch != '*' && lastch != '/' && lastch != '_')
 			{
-/*				Error err = Error(line_num, 3);
+				Error err = Error(line_num, INVALID_CHAR);
 				err.printerr();
-				err.skiperr();
-*/				
-				cout << "error in " << line_num << endl;
+				vector<char> list = { '\'', ';', '\n' };
+				bool re = skip(list);
+				if (re)
+				{
+					return nextsym();
+				}
+
 				return Token(NOTDEFINE, '\0', line_num);
 			}
 			word[n++] = lastch;
@@ -300,11 +313,15 @@ Token Lexer::nextsym()
 		}
 		if (lastch != '\'')
 		{
-/*			Error err = Error(line_num, 4);
+			Error err = Error(line_num, UNMAtCH_SYMBOL);
 			err.printerr();
-			err.skiperr();
-*/
-			cout << "error in " << line_num << endl;
+			vector<char> list = { ';', '\n' };
+			bool re = skip(list);
+			if (re)
+			{
+				return nextsym();
+			}
+
 			return Token(NOTDEFINE, '\0', line_num);
 		}
 		word[n++] = lastch;
@@ -398,16 +415,36 @@ Token Lexer::nextsym()
 	}
 	else
 	{
-/*		Error err = Error(line_num, 3);
+		Error err = Error(line_num, INVALID_CHAR);
 		err.printerr();
-		err.skiperr();
-*/
-		cout << "error in " << line_num << endl;
+		vector<char> list = { ';', ' ', '\n' };
+		bool re = skip(list);
+		if (re)
+		{
+			return nextsym();
+		}
+
 		return Token(NOTDEFINE, '\0', line_num);
 	}
 }
 
-bool Lexer::skip(char* end_char)
+bool Lexer::skip(vector<char> end_char)
 {
-	return true;
+	while (checkfile())
+	{
+		for (int i = 0; i < end_char.size(); i++)
+		{
+			if (lastch == end_char[i])
+			{
+				if (checkfile())
+					lastch = fgetc(fin);
+				return true;
+			}
+		}
+		if (checkfile())
+			lastch = fgetc(fin);
+		else
+			return false;
+	}
+	return false;
 }
