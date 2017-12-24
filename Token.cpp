@@ -6,7 +6,7 @@
 #include "error.h"
 #include "token.h"
 
-//extern string to_string(int num);
+extern string to_string(int num);
 string symstring[] = {
 	"NOTDEFINE",
 	"IDENTITY",

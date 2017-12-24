@@ -3,6 +3,8 @@
 #include "string"
 #include "fstream"
 
+#include "stdlib.h"
+
 #include "lexer.h"
 #include "define.h"
 #include "error.h"
@@ -15,7 +17,7 @@ Lexer::Lexer() {
 	line_num = 1;
 }
 
-Lexer::Lexer(char* filename) 
+Lexer::Lexer(char* filename)
 {
 	using namespace std;
 	lastch = '\0';
@@ -33,7 +35,7 @@ Lexer::~Lexer()
 	fclose(fin);
 }
 
-int Lexer::checkfile() 
+int Lexer::checkfile()
 {
 	if (!fin)
 		return 0;

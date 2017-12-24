@@ -17,7 +17,7 @@ string type2string(enum type ttype)
 	return list[ttype];
 }
 
-/*
+
 string to_string(int num)
 {
 	ostringstream ostr;
@@ -25,7 +25,7 @@ string to_string(int num)
 	string tmp = ostr.str();
 	return tmp;
 }
-*/
+
 
 Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 	: lex(l), tables(tlist), midcodes(m), result(false)
@@ -70,7 +70,7 @@ Token Parser::gettoken(int mode = 0)
 		}
 		break;
 	case 1:
-		if (pretoken.size() == 0) 
+		if (pretoken.size() == 0)
 		{
 			ntoken = lex.nextsymbol();
 			pretoken.insert(pretoken.end(), ntoken);
@@ -168,7 +168,7 @@ string Parser::genvar(string str)
 {
 	static int strnum = 1;
 	map<string, SymbolTable>::iterator iter = tables.find("#StringConst");
-	
+
 	map<string, SymbolItem>::iterator iter2 = iter->second.symlist.begin();
 	while (iter2 != iter->second.symlist.end() && iter2->second.getstr() != str)
 	{
@@ -454,7 +454,7 @@ bool Parser::constDef()
 
 		value = sign*ntoken.getIntValue();
 		offset = ntable->alloc(4);
-		SymbolItem nitem(name, ttype, kkind, line, offset, value);	
+		SymbolItem nitem(name, ttype, kkind, line, offset, value);
 		ntable->insert(nitem);
 
 		ntoken = gettoken(1);
@@ -511,7 +511,7 @@ bool Parser::constDef()
 		ntoken = gettoken();
 		if (ntoken.getType() != CONST_CHAR)
 			return false;
-		
+
 		value = ntoken.getCharValue();
 		offset = ntable->alloc(4);
 		SymbolItem nitem(name, ttype, kkind, line, offset, value);
@@ -555,7 +555,7 @@ bool Parser::variableDeclare()
 	if (!re)
 		return false;
 	Token ntoken = gettoken();
-	if (ntoken.getType() != SEMICOLON) 
+	if (ntoken.getType() != SEMICOLON)
 	{
 		return false;
 	}
@@ -1254,7 +1254,7 @@ bool Parser::assignSta()
 		islist = true;
 		ntoken = gettoken(1);
 		bool re = expression(ischar, index, minusone);
-		
+
 		ntoken = gettoken();
 		if (ntoken.getType() != R_SQUARE)
 			return false;
@@ -1274,7 +1274,7 @@ bool Parser::assignSta()
 		vector<string> tmp = { "[]=", name, index, result };
 		midcodes.insert(tmp);
 	}
-	else 
+	else
 	{
 		vector<string> tmp = { "=", result, name };
 		midcodes.insert(tmp);
@@ -1300,7 +1300,7 @@ bool Parser::ifSta()
 	string ifbranch = genlabel(), elsebranch = genlabel(), endif = genlabel();
 	vector<string> cond;
 	bool re = conditionSta(cond);
-	
+
 	vector<string> tmp = {"bnz"};
 	for (int i = 0; i < cond.size(); i++)
 	{
@@ -1322,7 +1322,7 @@ bool Parser::ifSta()
 		ntoken = lex.nextsymbol();
 		pretoken.insert(pretoken.begin(), ntoken);
 	}
-	
+
 	midcodes.insert({ ifbranch, ":" });
 
 	re = statement();
@@ -1357,7 +1357,7 @@ bool Parser::switchSta()
 	Token ntoken = gettoken();
 	if (ntoken.getType() != SWITCH)
 		return false;
-	
+
 	ntoken = gettoken();
 	if (ntoken.getType() != L_BRACK)
 		return false;
@@ -1410,7 +1410,7 @@ bool Parser::switchSta()
 	ntoken = gettoken();
 	if (ntoken.getType() != R_CURLY)
 		return false;
-	
+
 	midcodes.insert({endlabel, ":"});
 	printresult("This is a Switch Statement!");
 	return true;
@@ -1439,7 +1439,7 @@ bool Parser::suitationSta(bool ischar, string flag, int &caseindex, string endla
 	int sign = 1;
 	if (ntoken.getType() != CASE)
 		return false;
-	
+
 	ntoken = gettoken();
 	if (ntoken.getType() != CONST_INT  && ntoken.getType() != CONST_CHAR && ntoken.getType() != MINUS&& ntoken.getType() != PLUS)
 		return false;
@@ -1496,7 +1496,7 @@ bool Parser::defaultSta(int &caseindex, string endlabel)
 	bool re = statement();
 	if (!re)
 		return false;
-	
+
 	midcodes.insert({ "goto", endlabel });
 	printresult("This is a Default Statement!");
 	return true;
@@ -1512,7 +1512,7 @@ bool Parser::whileSta()
 	ntoken = gettoken();
 	if (ntoken.getType() != L_BRACK)
 		return false;
-	
+
 	int whileindex = midcodes.size();
 
 	if (pretoken.size() == 0)
@@ -1822,7 +1822,7 @@ bool Parser::scanSta()
 	while (ntoken.getType() == COMMA)
 	{
 		pretoken.erase(pretoken.begin());
-		ntoken = gettoken();		
+		ntoken = gettoken();
 		if (ntoken.getType() != IDENTITY)
 			return false;
 		midcodes.insert({ "scan", ntoken.getStrValue() });
@@ -1908,7 +1908,7 @@ bool Parser::expression(bool &ischar, string &result, int &index)
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
 	}
-	
+
 	string num2;
 	bool re = item(ischar, num2, index);
 	if (!re)
@@ -2120,7 +2120,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 					cout << "Error_3" << endl;
 					return false;
 				}
-				else if (item.gettype() == INT_TYPE) 
+				else if (item.gettype() == INT_TYPE)
 				{
 					t = INT_TYPE;
 					ischar = false;
@@ -2178,7 +2178,7 @@ bool Parser::factor(bool &ischar, string &result, int &index)
 			midcodes.insert(tmp, index++);
 		else
 			midcodes.insert(tmp);
-		pretoken.erase(pretoken.begin()); 
+		pretoken.erase(pretoken.begin());
 		break;
 	default:
 		return false;
