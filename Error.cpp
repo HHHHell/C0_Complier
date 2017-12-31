@@ -25,21 +25,21 @@ void Error::printerr()
 {
 	using namespace std;
 
-	cout << no << " ";
-	eout << no << " ";
+	cout << no << ": ";
+	eout << no << ": ";
 	switch (errcode)
 	{
 	case INVALID_CHAR:
-		cout << "Invalid characters in line: " << line_num << endl;
-		eout << "Invalid characters in line: " << line_num << endl;
+		cout << "Invalid characters in line " << line_num << endl;
+		eout << "Invalid characters in line " << line_num << endl;
 		break;
 	case UNMAtCH_SYMBOL:
-		cout << "Unmatched symbols in line: " << line_num << endl;
-		eout << "Unmatched symbols in line: " << line_num << endl;
+		cout << "Unmatched symbols in line " << line_num << endl;
+		eout << "Unmatched symbols in line " << line_num << endl;
 		break;
 	case SYNTAX_ERROR:
-		cout << "Syntax error in line: " << line_num << endl;
-		eout << "Syntax error in line: " << line_num << endl;
+		cout << "Syntax error in line " << line_num << endl;
+		eout << "Syntax error in line " << line_num << endl;
 	default:
 		break;
 	}

@@ -23,6 +23,7 @@ public:
 	~Lexer();
 	Lexer(char* filename);
 	char getLastchar();
+	int getline();
 	int checkfile();
 	Token nextsymbol();
 	bool skip(vector<char> end_char);

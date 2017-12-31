@@ -10,6 +10,7 @@
 
 using namespace std;
 extern std::string str2lower(std::string str);
+extern bool flag;
 
 string type2string(enum type ttype)
 {
@@ -17,6 +18,7 @@ string type2string(enum type ttype)
 	return list[ttype];
 }
 
+// Uncomment if run with CodeBlocks
 /*
 string to_string(int num)
 {
@@ -38,7 +40,7 @@ Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 
 Parser::~Parser()
 {
-	if (result)
+	if (result && flag)
 		parserout << "\nFinished!" << endl;
 	else
 		parserout << "\nError!" << endl;
@@ -191,6 +193,13 @@ string Parser::genlabel()
 	return ".label" + to_string(num++);
 }
 
+bool Parser::skip()
+{
+	vector<char> list = { ';', '\n' };
+	return lex.skip(list);
+}
+
+/*Parser*/
 bool Parser::program()
 {
 	using namespace std;
@@ -383,29 +392,63 @@ bool Parser::constDeclare()
 	Token ntoken = gettoken();
 
 	if (ntoken.getType() != CONST)
-		return false;
+	{
+		Error err(ntoken.getLinenum(), SYNTAX_ERROR);
+		err.printerr();
+		skip();
+	}
+	else
+	{
+		ntoken = gettoken(1);
+		bool re = constDef();
+		if (!re)
+		{
+			Error err(ntoken.getLinenum(), SYNTAX_ERROR);
+			err.printerr();
+			skip();
+		}
+		else
+		{
+			ntoken = gettoken();
+			if (ntoken.getType() != SEMICOLON)
+			{
+				Error err(ntoken.getLinenum(), SYNTAX_ERROR);
+				err.printerr();
+				skip();
+			}
+			else
+			{
+				printresult("This is a Const Variable Declare!");
+			}
+		}
+	}
 	ntoken = gettoken(1);
-	bool re = constDef();
-	if (!re)
-		return false;
-	ntoken = gettoken();
-	if (ntoken.getType() != SEMICOLON)
-		return false;
-	printresult("This is a Const Variable Declare!");
-	ntoken = gettoken(1);
-
 	while (ntoken.getType() == CONST)
 	{
 		pretoken.erase(pretoken.begin());
 		ntoken = gettoken(1);
 		bool re = constDef();
 		if (!re)
-			return false;
-		ntoken = gettoken();
-		if (ntoken.getType() != SEMICOLON)
-			return false;
-		printresult("This is a Const Variable Declare!");
-		ntoken = gettoken(1);
+		{
+			Error err(ntoken.getLinenum(), SYNTAX_ERROR);
+			err.printerr();
+			skip();
+		}
+		else
+		{
+			ntoken = gettoken();
+			if (ntoken.getType() != SEMICOLON)
+			{
+				Error err(ntoken.getLinenum(), SYNTAX_ERROR);
+				err.printerr();
+				skip();
+			}
+			else
+			{
+				printresult("This is a Const Variable Declare!");
+				ntoken = gettoken(1);
+			}
+		}
 	}
 	return true;
 }

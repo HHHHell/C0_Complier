@@ -49,6 +49,11 @@ char Lexer::getLastchar()
 	return lastch;
 }
 
+int Lexer::getline()
+{
+	return line_num;
+}
+
 Token Lexer::nextsymbol()
 {
 	Token ntoken = nextsym();

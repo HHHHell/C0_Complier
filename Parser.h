@@ -23,7 +23,6 @@ private:
 
 	Token gettoken(int mode);
 	void printresult(std::string str);
-	bool isexists(SymbolItem item);
 	bool isexists(string name);
 	SymbolItem pfind(string name);
 	string genvar();
@@ -69,6 +68,8 @@ public:
 	bool item(bool &ischar, string& result, int &index);
 	bool factor(bool &iscahr, string& result, int &index);
 	bool integer(int& value);
+
+	bool skip();
 };
 
 #endif // !PARSE_H_
