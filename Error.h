@@ -1,5 +1,8 @@
 #ifndef ERROR_H_
 #define ERROR_H_
+#include "fstream"
+#include "iostream"
+
 
 #define NDEFERROR		0
 
@@ -10,13 +13,17 @@
 //parser error
 #define SYNTAX_ERROR	11
 
+using namespace std;
+
 class Error
 {
 private:
 	int line_num;
 	int errcode;
 	int no;
+	ofstream eout;
 	static int errnum;
+
 public:
 	Error();
 	Error(int line, int code);

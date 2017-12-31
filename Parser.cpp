@@ -17,7 +17,7 @@ string type2string(enum type ttype)
 	return list[ttype];
 }
 
-
+/*
 string to_string(int num)
 {
 	ostringstream ostr;
@@ -25,7 +25,7 @@ string to_string(int num)
 	string tmp = ostr.str();
 	return tmp;
 }
-
+*/
 
 Parser::Parser(Lexer &l, map<string, SymbolTable> &tlist, Midcodes &m)
 	: lex(l), tables(tlist), midcodes(m), result(false)

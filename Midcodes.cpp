@@ -10,7 +10,7 @@
 
 using namespace std;
 
-extern string to_string(int num);
+//extern string to_string(int num);
 
 Midcodes::Midcodes(map<string, SymbolTable> &t):tables(t) {}
 

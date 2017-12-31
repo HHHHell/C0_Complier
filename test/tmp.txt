@@ -1,0 +1,6 @@
+void main()
+{
+if(1 > 2)
+	printf("1 > 2");
+else;
+}

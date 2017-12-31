@@ -74,9 +74,9 @@ Token Lexer::nextsym()
 
 	while (isspace(lastch) || lastch == '\0')
 	{
-		lastch = fgetc(fin);
 		if (lastch == '\n')
 			line_num++;
+		lastch = fgetc(fin);
 		continue;
 	}
 	if (!checkfile())
@@ -231,7 +231,7 @@ Token Lexer::nextsym()
 			return Token(type, "!=", line_num);
 		}
 
-		Error err = Error(line_num, UNMAtCH_SYMBOL);
+		Error err(line_num, UNMAtCH_SYMBOL);
 		err.printerr();
 		vector<char> list = { ';', '\n' };
 		bool re = skip(list);
@@ -269,7 +269,7 @@ Token Lexer::nextsym()
 		{
 			if (lastch < 32 || lastch > 127)
 			{
-				Error err = Error(line_num, UNMAtCH_SYMBOL);
+				Error err(line_num, UNMAtCH_SYMBOL);
 				err.printerr();
 				vector<char> list = { ';', '\n' };
 				bool re = skip(list);
@@ -299,7 +299,7 @@ Token Lexer::nextsym()
 		{
 			if (!isdigit(lastch) && !isalpha(lastch) && lastch != '+'&& lastch != '-' && lastch != '*' && lastch != '/' && lastch != '_')
 			{
-				Error err = Error(line_num, INVALID_CHAR);
+				Error err(line_num, INVALID_CHAR);
 				err.printerr();
 				vector<char> list = { '\'', ';', '\n' };
 				bool re = skip(list);
@@ -315,7 +315,7 @@ Token Lexer::nextsym()
 		}
 		if (lastch != '\'')
 		{
-			Error err = Error(line_num, UNMAtCH_SYMBOL);
+			Error err(line_num, UNMAtCH_SYMBOL);
 			err.printerr();
 			vector<char> list = { ';', '\n' };
 			bool re = skip(list);
@@ -417,7 +417,7 @@ Token Lexer::nextsym()
 	}
 	else
 	{
-		Error err = Error(line_num, INVALID_CHAR);
+		Error err(line_num, INVALID_CHAR);
 		err.printerr();
 		vector<char> list = { ';', ' ', '\n' };
 		bool re = skip(list);
@@ -438,13 +438,19 @@ bool Lexer::skip(vector<char> end_char)
 		{
 			if (lastch == end_char[i])
 			{
+				if (lastch == '\n')
+					line_num++;
 				if (checkfile())
 					lastch = fgetc(fin);
 				return true;
 			}
 		}
 		if (checkfile())
+		{
 			lastch = fgetc(fin);
+			if (lastch == '\n')
+				line_num++;
+		}
 		else
 			return false;
 	}

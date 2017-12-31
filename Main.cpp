@@ -10,8 +10,23 @@
 
 using namespace std;
 
-int Error::errnum = 0;
+int Error::errnum = 1;
+bool flag = true;
+
+void prefile()
+{
+	vector<string> files = { "result//error.txt","result//finalcode.asm",
+		"result//lexer_result.txt","result//parser_result.txt","result//mcodes.txt" };
+	ofstream file;
+	for (int i = 0; i < files.size(); i++)
+	{
+		file.open(files[i]);
+		file.close();
+	}
+}
+
 int main(){
+	prefile();
 	char filename[MAXLENGTH];
 
 	cout << "Please input your file path: " << endl;
@@ -32,7 +47,6 @@ int main(){
 
 	SymbolTable ntable(0);	
 	tables.insert(pair<string, SymbolTable>("#OverAll", ntable));
-
 	SymbolTable ttable(0);
 	tables.insert(pair<string, SymbolTable>("#StringConst", ttable));
 
@@ -40,7 +54,7 @@ int main(){
 
 	bool re = parser.program();
 	parser.result = re;
-	if (!re)
+	if (!re || !flag)
 	{
 		cout << "Error occured!" << endl;
 	}
