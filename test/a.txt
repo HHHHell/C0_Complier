@@ -1,0 +1,9 @@
+void foo5{
+	printf("foo_5 ");
+}
+
+void main()
+{
+	const char a = 'a';
+	printf(a);
+}

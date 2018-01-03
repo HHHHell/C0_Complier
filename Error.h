@@ -8,10 +8,16 @@
 
 // lexer error
 #define INVALID_CHAR	1
-#define UNMAtCH_SYMBOL	2
+#define UNMATCH_SYMBOL	2
 
 //parser error
 #define SYNTAX_ERROR	11
+#define IDENT_REDIFN	12
+#define UNMATCH_TYPE	13
+#define UNMATCH_IFSTA	14
+#define IDENT_NODIFN	15
+#define WRONG_PARANUM	16
+#define WRONG_INDEX		17
 
 using namespace std;
 

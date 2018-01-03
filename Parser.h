@@ -31,6 +31,7 @@ private:
 	string genvar(int value, enum type t);
 	string genvar(string str);
 	string genlabel();
+	string genname();
 
 public:
 	bool result;
@@ -69,7 +70,7 @@ public:
 	bool factor(bool &iscahr, string& result, int &index);
 	bool integer(int& value);
 
-	bool skip();
+	bool skip(int mode = 0);
 };
 
 #endif // !PARSE_H_

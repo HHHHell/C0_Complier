@@ -442,6 +442,20 @@ void Midcodes::toMips(string filename, map<string, SymbolTable> &tables)
 				mpcode.insert(mpcode.end(), tmp);
 				mpcode.insert(mpcode.end(), "sw $s1," + to_string(item.getoffset()*-1) + "($fp)");
 			}
+			
+			iter = giter->second.symlist.begin();
+			for (; iter != giter->second.symlist.end(); iter++)
+			{
+				if (iter->second.getkind() != CONST_VAR)
+					continue;
+				SymbolItem item = iter->second;
+
+				tmp = "li $s1," + to_string(item.getvalue());
+				mpcode.insert(mpcode.end(), tmp);
+				tmp = "sw $s1," + to_string(item.getoffset()*-1) + "($fp)";
+				mpcode.insert(mpcode.end(), tmp);
+			}
+
 		}
 		else if (line[0] == "ret")
 		{

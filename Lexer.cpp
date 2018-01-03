@@ -236,10 +236,11 @@ Token Lexer::nextsym()
 			return Token(type, "!=", line_num);
 		}
 
-		Error err(line_num, UNMAtCH_SYMBOL);
+		Error err(line_num, UNMATCH_SYMBOL);
 		err.printerr();
 		vector<char> list = { ';', '\n' };
 		bool re = skip(list);
+
 		if (re)
 		{
 			return nextsym();
@@ -274,10 +275,11 @@ Token Lexer::nextsym()
 		{
 			if (lastch < 32 || lastch > 127)
 			{
-				Error err(line_num, UNMAtCH_SYMBOL);
+				Error err(line_num, UNMATCH_SYMBOL);
 				err.printerr();
 				vector<char> list = { ';', '\n' };
 				bool re = skip(list);
+
 				if (re)
 				{
 					return nextsym();
@@ -308,8 +310,13 @@ Token Lexer::nextsym()
 				err.printerr();
 				vector<char> list = { '\'', ';', '\n' };
 				bool re = skip(list);
+
 				if (re)
 				{
+					if (lastch == '\'')
+					{
+						lastch = fgetc(fin);
+					}
 					return nextsym();
 				}
 
@@ -320,10 +327,11 @@ Token Lexer::nextsym()
 		}
 		if (lastch != '\'')
 		{
-			Error err(line_num, UNMAtCH_SYMBOL);
+			Error err(line_num, UNMATCH_SYMBOL);
 			err.printerr();
 			vector<char> list = { ';', '\n' };
 			bool re = skip(list);
+
 			if (re)
 			{
 				return nextsym();
@@ -439,22 +447,18 @@ bool Lexer::skip(vector<char> end_char)
 {
 	while (checkfile())
 	{
+		if (lastch == '\n')
+			line_num++;
 		for (int i = 0; i < end_char.size(); i++)
 		{
 			if (lastch == end_char[i])
 			{
-				if (lastch == '\n')
-					line_num++;
-				if (checkfile())
-					lastch = fgetc(fin);
 				return true;
 			}
 		}
 		if (checkfile())
 		{
 			lastch = fgetc(fin);
-			if (lastch == '\n')
-				line_num++;
 		}
 		else
 			return false;

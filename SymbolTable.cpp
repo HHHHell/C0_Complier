@@ -26,8 +26,15 @@ bool SymbolTable::isexists(string name)
 
 void SymbolTable::insert(SymbolItem item)
 {
-	symlist.insert(pair<string, SymbolItem>(item.getname(), item));
-//	cout << symlist.size() << " Insert " << item.getname() << endl;
+	if (isexists(item.getname()))
+	{
+		Error err(item.getdecline(), IDENT_REDIFN);
+		err.printerr();
+	}
+	else 
+	{
+		symlist.insert(pair<string, SymbolItem>(item.getname(), item));
+	}
 }
 
 SymbolItem SymbolTable::find(string name)

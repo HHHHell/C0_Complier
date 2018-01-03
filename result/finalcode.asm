@@ -175,6 +175,14 @@ jr $ra
 .label3 : 
  
 main : 
+li $s1,100
+sw $s1,-72($fp)
+li $s1,101
+sw $s1,-76($fp)
+li $s1,400
+sw $s1,-64($fp)
+li $s1,500
+sw $s1,-68($fp)
 li $s1,2
 sw $s1,-224($fp)
 lw $s1,-224($fp)
