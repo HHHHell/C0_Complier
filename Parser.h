@@ -55,7 +55,7 @@ public:
 	bool ifSta();
 	bool switchSta();
 	bool suitationTab(bool ischar, string flag, int &caseindex, string endlabel);
-	bool suitationSta(bool ischar, string flag, int &caseindex, string endlabel);
+	bool suitationSta(bool ischar, string flag, int &caseindex, string endlabel, vector<int> &clist);
 	bool defaultSta(int &caseindex, string endlabel);
 	bool whileSta();
 	bool retfunCall(int &index);

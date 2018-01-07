@@ -1,9 +1,6 @@
-void foo5{
-	printf("foo_5 ");
-}
-
 void main()
 {
-	const char a = 'a';
-	printf(a);
+	const char la = 'a';
+	char lower[1];
+	lower[0] = la;
 }

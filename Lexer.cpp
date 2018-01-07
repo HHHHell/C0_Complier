@@ -236,17 +236,9 @@ Token Lexer::nextsym()
 			return Token(type, "!=", line_num);
 		}
 
-		Error err(line_num, UNMATCH_SYMBOL);
-		err.printerr();
-		vector<char> list = { ';', '\n' };
-		bool re = skip(list);
-
-		if (re)
-		{
-			return nextsym();
-		}
-
-		return Token(NOTDEFINE, '\0', line_num);
+		Error err(line_num, INVALID_CHAR);
+		err.printerr("!");
+		return Token(type, "!=", line_num);
 	}
 
 	else if (lastch == '=')
@@ -275,17 +267,15 @@ Token Lexer::nextsym()
 		{
 			if (lastch < 32 || lastch > 127)
 			{
-				Error err(line_num, UNMATCH_SYMBOL);
-				err.printerr();
-				vector<char> list = { ';', '\n' };
-				bool re = skip(list);
-
-				if (re)
+				Error err(line_num, INVALID_CHAR);
+				err.printerr("" + lastch);
+				if (lastch == '\n')
 				{
-					return nextsym();
+					lastch = '"';
+					break;
 				}
-
-				return Token(NOTDEFINE, '\0', line_num);
+				lastch = fgetc(fin);
+				continue;
 			}
 			word[n++] = lastch;
 			lastch = fgetc(fin);
@@ -307,20 +297,8 @@ Token Lexer::nextsym()
 			if (!isdigit(lastch) && !isalpha(lastch) && lastch != '+'&& lastch != '-' && lastch != '*' && lastch != '/' && lastch != '_')
 			{
 				Error err(line_num, INVALID_CHAR);
-				err.printerr();
-				vector<char> list = { '\'', ';', '\n' };
-				bool re = skip(list);
-
-				if (re)
-				{
-					if (lastch == '\'')
-					{
-						lastch = fgetc(fin);
-					}
-					return nextsym();
-				}
-
-				return Token(NOTDEFINE, '\0', line_num);
+				err.printerr(lastch + "");
+				lastch = '_';
 			}
 			word[n++] = lastch;
 			lastch = fgetc(fin);
@@ -328,16 +306,8 @@ Token Lexer::nextsym()
 		if (lastch != '\'')
 		{
 			Error err(line_num, UNMATCH_SYMBOL);
-			err.printerr();
-			vector<char> list = { ';', '\n' };
-			bool re = skip(list);
-
-			if (re)
-			{
-				return nextsym();
-			}
-
-			return Token(NOTDEFINE, '\0', line_num);
+			err.printerr("'");
+			lastch = '\'';
 		}
 		word[n++] = lastch;
 		lastch = fgetc(fin);
@@ -431,15 +401,10 @@ Token Lexer::nextsym()
 	else
 	{
 		Error err(line_num, INVALID_CHAR);
-		err.printerr();
-		vector<char> list = { ';', ' ', '\n' };
-		bool re = skip(list);
-		if (re)
-		{
-			return nextsym();
-		}
-
-		return Token(NOTDEFINE, '\0', line_num);
+		err.printerr(lastch + "");
+		
+		lastch = fgetc(fin);
+		return nextsym();
 	}
 }
 
