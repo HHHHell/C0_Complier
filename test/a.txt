@@ -1,6 +1,0 @@
-void main()
-{
-	const char la = 'a';
-	char lower[1];
-	lower[0] = la;
-}

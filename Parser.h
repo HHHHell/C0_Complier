@@ -73,4 +73,5 @@ public:
 	bool skip(int mode = 0);
 };
 
+
 #endif // !PARSE_H_

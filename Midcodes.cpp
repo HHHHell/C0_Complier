@@ -11,7 +11,6 @@
 using namespace std;
 
 //extern string to_string(int num);
-
 Midcodes::Midcodes(map<string, SymbolTable> &t):tables(t) {}
 
 SymbolItem Midcodes::find(string name, string nkey)

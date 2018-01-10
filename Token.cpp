@@ -7,6 +7,7 @@
 #include "token.h"
 
 //extern string to_string(int num);
+
 string symstring[] = {
 	"NOTDEFINE",
 	"IDENTITY",
@@ -51,6 +52,7 @@ string symstring[] = {
 	"L_CURLY",
 	"R_CURLY"
 };
+
 std::string str2lower(std::string str)
 {
 	using namespace std;

@@ -1,3 +1,0 @@
-1: No right brack in line 3
-2: No right brack in line 10
-3: Syntax error in line 11

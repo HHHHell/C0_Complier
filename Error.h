@@ -50,4 +50,5 @@ public:
 	void printerr(string c = "");
 };
 
+
 #endif // !ERROR_H_

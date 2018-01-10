@@ -3,6 +3,7 @@
 #include "string"
 #include "iostream"
 
+
 using namespace std;
 
 SymbolItem::SymbolItem() :name(""), ttype(NOTYPE), kkind(NOKIND)

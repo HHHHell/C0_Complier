@@ -1,0 +1,17 @@
+int foo(int a , int b)
+{
+	if (b = 10)
+	{
+		;;
+	}
+	else
+		;
+	return (1);
+}
+
+void Main(){
+	int x;
+	x = 10;
+	printf(b);
+	return;
+}

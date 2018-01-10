@@ -5,6 +5,7 @@
 #include "SymbolTable.h"
 
 using namespace std;
+
 class Midcodes
 {
 	map<string, SymbolTable> &tables;

@@ -68,4 +68,5 @@ enum kind
 	FUNCTION
 };
 
+
 #endif // !DEFINE_H_

@@ -29,4 +29,5 @@ public:
 	bool skip(vector<char> end_char);
 };
 
+
 #endif // !LEXER_H_

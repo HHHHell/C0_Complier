@@ -9,6 +9,7 @@
 #include "sstream"
 
 using namespace std;
+
 extern std::string str2lower(std::string str);
 extern bool flag;
 

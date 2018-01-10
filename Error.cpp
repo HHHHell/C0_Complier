@@ -120,5 +120,6 @@ void Error::printerr(string c)
 	default:
 		break;
 	}
+
 	eout.flush();
 }
